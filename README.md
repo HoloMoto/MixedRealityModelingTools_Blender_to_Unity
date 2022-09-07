@@ -8,7 +8,6 @@
 
 　With HoloLens, you can see the PC screen on the see-through display of the HoloLens, and see the modeling object as a hologram while modeling.
 
-Translated with www.DeepL.com/Translator (free version)
 
 # BlenderMRViewForHoloLens 日本語
 
