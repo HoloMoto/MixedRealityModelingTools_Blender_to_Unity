@@ -1,5 +1,14 @@
 # BlenderMRViewForHoloLens
 
+　This repository contains supporting tools and tutorials for real-time MR views in Belnder using Microsoft HoloLens 2, allowing users to model while viewing objects from the user's perspective.
+
+　Since Blender 3.x, VR sessions using MetaQuest or PCVR are available.
+
+　The problem with this, however, is that it was difficult to perform modeling with keyboard input and mouse operation while wearing an HMD.
+
+　With HoloLens, you can see the PC screen on the see-through display of the HoloLens, and see the modeling object as a hologram while modeling.
+
+Translated with www.DeepL.com/Translator (free version)
 
 # BlenderMRViewForHoloLens 日本語
 
