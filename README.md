@@ -25,7 +25,16 @@
  ・Unity 2021.3.5f1(LTS)
  
  ・Blender 3.0
+
+ ・MeshSync
  
+https://github.com/unity3d-jp/MeshSync
+ 
+ ・MeshSyncDCCPlugins
+
+https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@0.15/manual/index.html
+
+
  ## 現時点の問題点
  
  　Unityアプリケーションがクラッシュする問題を確認しています。　こちらに関しては現在原因の特定作業を行っています。
