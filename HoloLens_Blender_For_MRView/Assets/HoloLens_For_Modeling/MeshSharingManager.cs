@@ -3,6 +3,8 @@ using Photon.Realtime;
 using UnityEngine;
 using ExitGames.Client.Photon;
 using System.Collections.Generic;
+using System;
+using System.Collections;
 
 namespace MeshSharing
 {
@@ -11,14 +13,26 @@ namespace MeshSharing
         private const byte MeshShareEventCode = 0;
         public Material defaultMaterial;
 
-        private void Start()
-        {
-            if (PhotonNetwork.IsConnected)
-            {
-                SendTransformData();
-                SendMeshData();
-            }
-        }
+  private void Start()
+  {
+      if (PhotonNetwork.IsConnected)
+      {
+          StartCoroutine(SendMeshDataPeriodically());
+      }
+  }
+  private IEnumerator SendMeshDataPeriodically()
+  {
+      while (true)
+      {
+          if (PhotonNetwork.InRoom)
+          {
+              SendTransformData();
+              SendMeshData();
+          }
+
+          yield return new WaitForSeconds(5.0f); // Wait for 5 seconds before sending again
+      }
+  }
 
         public override void OnJoinedRoom()
         {
