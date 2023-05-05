@@ -9,6 +9,7 @@ namespace MeshSharing
     public class MeshSharingManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         private const byte MeshShareEventCode = 0;
+        public Material defaultMaterial;
 
         private void Start()
         {
@@ -91,6 +92,8 @@ namespace MeshSharing
                 newObj.transform.localRotation = new Quaternion(data.rotation[0], data.rotation[1], data.rotation[2], data.rotation[3]);
                 newObj.transform.localScale = new Vector3(data.scale[0], data.scale[1], data.scale[2]);
                 newObj.AddComponent<MeshFilter>();
+                MeshRenderer meshRenderer = newObj.AddComponent<MeshRenderer>(); // Modify this line
+                meshRenderer.material = defaultMaterial; // Add this line
             }
         }
 

@@ -252,7 +252,7 @@ Material:
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
-    - _Parallax: 3.4311872e-32
+    - _Parallax: 3.434273e-32
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
@@ -301,6 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28d5d27bdae7b394ca3649300ff1fb6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultMaterial: {fileID: 0}
 --- !u!114 &1507182815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -641,6 +642,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28d5d27bdae7b394ca3649300ff1fb6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultMaterial: {fileID: 0}
 --- !u!114 &1936113645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -880,6 +882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28d5d27bdae7b394ca3649300ff1fb6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultMaterial: {fileID: 0}
 --- !u!114 &2105074234
 MonoBehaviour:
   m_ObjectHideFlags: 0
