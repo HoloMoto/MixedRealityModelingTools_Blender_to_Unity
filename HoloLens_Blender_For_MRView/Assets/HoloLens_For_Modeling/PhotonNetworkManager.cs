@@ -30,5 +30,14 @@ public class PhotonNetworkManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("Joined a room");
+        if (PhotonNetwork.InRoom)
+        {
+            Debug.Log("Connected to room: " + PhotonNetwork.CurrentRoom.Name);
+            Debug.Log("Number of players in the room: " + PhotonNetwork.CurrentRoom.PlayerCount);
+        }
+        else
+        {
+            Debug.Log("Not connected to any room");
+        }
     }
 }

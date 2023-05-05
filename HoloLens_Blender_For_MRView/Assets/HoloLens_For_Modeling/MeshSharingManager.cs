@@ -80,20 +80,20 @@ namespace MeshSharing
 
         private void BuildObjectHierarchy(byte[] serializedData)
         {
-            List<TransformData> transformDataList =
-                ObjectSerialization.Deserialize<List<TransformData>>(serializedData);
+            List<TransformData> transformDataList = ObjectSerialization.Deserialize<List<TransformData>>(serializedData);
 
             for (int i = 0; i < transformDataList.Count; i++)
             {
                 TransformData data = transformDataList[i];
                 GameObject newObj = new GameObject(data.name);
                 newObj.transform.SetParent(transform);
-                newObj.transform.localPosition = data.position;
-                newObj.transform.localRotation = data.rotation;
-                newObj.transform.localScale = data.scale;
+                newObj.transform.localPosition = new Vector3(data.position[0], data.position[1], data.position[2]);
+                newObj.transform.localRotation = new Quaternion(data.rotation[0], data.rotation[1], data.rotation[2], data.rotation[3]);
+                newObj.transform.localScale = new Vector3(data.scale[0], data.scale[1], data.scale[2]);
                 newObj.AddComponent<MeshFilter>();
             }
         }
+
 
         public override void OnEnable()
         {
@@ -137,16 +137,17 @@ namespace MeshSharing
     public class TransformData
     {
         public string name;
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 scale;
+        public float[] position;
+        public float[] rotation;
+        public float[] scale;
 
         public TransformData(Transform transform)
         {
             name = transform.name;
-            position = transform.localPosition;
-            rotation = transform.localRotation;
-            scale = transform.localScale;
+            position = new float[] { transform.localPosition.x, transform.localPosition.y, transform.localPosition.z };
+            rotation = new float[] { transform.localRotation.x, transform.localRotation.y, transform.localRotation.z, transform.localRotation.w };
+            scale = new float[] { transform.localScale.x, transform.localScale.y, transform.localScale.z };
         }
     }
+
 }
