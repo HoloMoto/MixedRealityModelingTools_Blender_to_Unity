@@ -7,9 +7,10 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 {
     public void Serialize(ref MessagePackWriter writer, MeshData value, MessagePackSerializerOptions options)
     {
-        writer.WriteArrayHeader(2);
+        writer.WriteArrayHeader(3);
         options.Resolver.GetFormatterWithVerify<List<Vector3>>().Serialize(ref writer, value.Vertices, options);
         options.Resolver.GetFormatterWithVerify<List<int>>().Serialize(ref writer, value.Indices, options);
+        options.Resolver.GetFormatterWithVerify<List<Vector3>>().Serialize(ref writer, value.Normals, options);  // Add this line
     }
 
     public MeshData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -23,17 +24,18 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 
         int length = reader.ReadArrayHeader();
 
-        if (length != 2)
+        if (length != 3)
         {
             throw new MessagePackSerializationException("Invalid array length.");
         }
 
         var vertices = options.Resolver.GetFormatterWithVerify<List<Vector3>>().Deserialize(ref reader, options);
         var indices = options.Resolver.GetFormatterWithVerify<List<int>>().Deserialize(ref reader, options);
+        var normals = options.Resolver.GetFormatterWithVerify<List<Vector3>>().Deserialize(ref reader, options);
 
         reader.Depth--;
 
-        return new MeshData { Vertices = vertices, Indices = indices };
+        return new MeshData { Vertices = vertices, Indices = indices , Normals = normals};
     }
 }
 public class MeshDataResolver : IFormatterResolver

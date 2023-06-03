@@ -52,7 +52,9 @@ public class UDPClient : MonoBehaviour
         int receivedDataLength = await Task.Run(() => socket.ReceiveFrom(buffer, ref serverEndPoint));
         Debug.Log(receivedDataLength);
         MeshData meshData = DeserializeMeshData(buffer, receivedDataLength);
-        UpdateMesh(meshData.Vertices, meshData.Indices);
+        Debug.Log("Vertices count after deserialization: " + meshData.Vertices.Count);
+        Debug.Log("Normals count after deserialization: " + meshData.Normals.Count);
+        UpdateMesh(meshData.Vertices, meshData.Indices, meshData.Normals); 
     }
 
     public void EndSession()
@@ -68,29 +70,33 @@ public class UDPClient : MonoBehaviour
     }
 
 
-    private void UpdateMesh(List<Vector3> vertices, List<int> indices)
+    private void UpdateMesh(List<Vector3> vertices, List<int> indices,List<Vector3> normals)
     {
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         Mesh mesh = new Mesh();
-        Debug.Log(indices.Count);
-        for (int i = 0; i < vertices.Count; i++)
-        {
-            Debug.Log(vertices[i]);
 
-        }
-
-        for (int i = 0; i < indices.Count; i++)
+        for (int i = 0; i < normals.Count; i++)
         {
-            Debug.Log(indices[i]);
+            normals[i] = normals[i].normalized;
+            Debug.Log("normals[" + i + "]=" + normals[i]);    
         }
+        Debug.Log("Normals count: " + normals.Count);
+        Debug.Log("Vertices count: " + vertices.Count);
+
+        // First, set the vertices
         mesh.SetVertices(vertices);
+
+        // Then, set the normals
+        mesh.SetNormals(normals);
+
+        // Finally, set the indices
         mesh.SetIndices(indices, MeshTopology.Triangles, 0);
-        mesh.RecalculateNormals();
 
         // 第3引数にはverticesの数を渡すように変更
         mesh.SetUVs(0, new List<Vector2>(new Vector2[vertices.Count]));
         meshFilter.mesh = mesh;
     }
+
 
 
     void MeshTest()
@@ -129,4 +135,7 @@ public class MeshData
 
     [Key(1)]
     public List<int> Indices { get; set; }
+
+    [Key(2)]
+    public List<Vector3> Normals { get; set; } 
 }

@@ -348,7 +348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   server: 127.0.0.1
-  port: 12345
+  port: 12347
 --- !u!33 &1347199844
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -377,7 +377,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

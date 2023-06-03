@@ -12,7 +12,7 @@ def udp_server(sock, server_address):
     print(f"Server is running on {server_address}")
 
     while True:
-        data, address = sock.recvfrom(4096)
+        data, address = sock.recvfrom(1073741824)
         print(f"Received message from {address}: {data.decode('utf-8')}")
  
         if data.decode('utf-8') == "GET_MESH":
@@ -45,16 +45,20 @@ def get_mesh_data():
     # Remove Triangulate modifier
     obj.modifiers.remove(triangulate_mod)
 
+  # 頂点の法線を取得
+    normals = [tuple(v.normal) for v in temp_mesh.vertices]
+    
     # Don't forget to remove the temporary mesh data
     bpy.data.meshes.remove(temp_mesh)
+    print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}, normals={len(normals)}")
+    return (vertices, triangles, normals)
 
-    print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}")
-    return (vertices, triangles)
 def send_mesh_data(address, mesh_data):
     serialized_mesh_data = msgpack.packb(mesh_data, use_bin_type=True)
     sock.sendto(serialized_mesh_data, address)
     print(f"Mesh data sent to {address}")
     time.sleep(0.5)
+
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
