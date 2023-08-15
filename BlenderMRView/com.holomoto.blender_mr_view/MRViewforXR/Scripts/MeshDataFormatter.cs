@@ -3,14 +3,18 @@ using MessagePack.Formatters;
 using UnityEngine;
 using System.Collections.Generic;
 using MessagePack.Resolvers;
+using MixedRealityModelingTools.Core;
 public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 {
     public void Serialize(ref MessagePackWriter writer, MeshData value, MessagePackSerializerOptions options)
     {
-        writer.WriteArrayHeader(3);
-        options.Resolver.GetFormatterWithVerify<List<Vector3>>().Serialize(ref writer, value.Vertices, options);
-        options.Resolver.GetFormatterWithVerify<List<int>>().Serialize(ref writer, value.Indices, options);
-        options.Resolver.GetFormatterWithVerify<List<Vector3>>().Serialize(ref writer, value.Normals, options);  // Add this line
+        writer.WriteMapHeader(3);
+        writer.Write("vertices");
+        options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.vertices, options);
+        writer.Write("triangles");
+        options.Resolver.GetFormatterWithVerify<List<int>>().Serialize(ref writer, value.triangles, options);
+        writer.Write("normals");
+        options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.normals, options);
     }
 
     public MeshData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -22,22 +26,42 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 
         options.Security.DepthStep(ref reader);
 
-        int length = reader.ReadArrayHeader();
-
+        int length = reader.ReadMapHeader();
         if (length != 3)
         {
-            throw new MessagePackSerializationException("Invalid array length.");
+            throw new MessagePackSerializationException("Invalid map length.");
         }
 
-        var vertices = options.Resolver.GetFormatterWithVerify<List<Vector3>>().Deserialize(ref reader, options);
-        var indices = options.Resolver.GetFormatterWithVerify<List<int>>().Deserialize(ref reader, options);
-        var normals = options.Resolver.GetFormatterWithVerify<List<Vector3>>().Deserialize(ref reader, options);
+        List<float> vertices = null;
+        List<int> triangles = null;
+        List<float> normals = null;
+
+        for (int i = 0; i < length; i++)
+        {
+            string key = reader.ReadString();
+            switch (key)
+            {
+                case "vertices":
+                    vertices = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
+                    break;
+                case "triangles":
+                    triangles = options.Resolver.GetFormatterWithVerify<List<int>>().Deserialize(ref reader, options);
+                    break;
+                case "normals":
+                    normals = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
+                    break;
+                default:
+                    reader.Skip();
+                    break;
+            }
+        }
 
         reader.Depth--;
 
-        return new MeshData { Vertices = vertices, Indices = indices , Normals = normals};
+        return new MeshData { vertices = vertices, triangles = triangles, normals = normals };
     }
 }
+
 public class MeshDataResolver : IFormatterResolver
 {
     public static readonly MeshDataResolver Instance = new MeshDataResolver();
