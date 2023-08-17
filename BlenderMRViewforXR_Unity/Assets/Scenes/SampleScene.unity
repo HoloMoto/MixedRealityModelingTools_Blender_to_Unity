@@ -611,6 +611,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetObject: {fileID: 1347199841}
+  _SetBlenderAxis: 1
+  _defaultMaterial: {fileID: 2100000, guid: 866c946b045277d41ad493a5819f347c, type: 2}
+  _isFlatShading: 1
   _isGetMeshData: 0
 --- !u!1 &1398551111
 GameObject:

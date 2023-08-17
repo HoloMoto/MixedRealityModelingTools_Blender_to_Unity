@@ -58,29 +58,7 @@ def send_message_to_unity(message):
             
 import numpy as np
 
-'''
-def send_mesh_data_to_unity(mesh_data):
-    vertices, triangles, normals = mesh_data
 
-    # Convert vertices and normals to float32
-    vertices_array = np.array(vertices, dtype='>f4').flatten() # float32 in big-endian
-    normals_array = np.array(normals, dtype='>f4').flatten()   # float32 in big-endian
-    triangles_array = np.array(triangles, dtype='>i4').flatten() # int32 in big-endian
-
-    
-    # Combine all arrays
-    combined_array = np.concatenate((vertices_array, normals_array, triangles_array))
-
-    # Convert numpy array to bytes
-    serialized_mesh_data = combined_array.tobytes()
-
-    for client in server_thread.clients:
-        try:
-            print(serialized_mesh_data)  # Print the binary data
-            client.sendall(serialized_mesh_data)
-        except Exception as e:
-            print(f"Error while sending mesh data to client: {e}")
-'''
 def send_mesh_data_to_unity(mesh_data):
     vertices, triangles, normals = mesh_data
 
@@ -100,7 +78,7 @@ def send_mesh_data_to_unity(mesh_data):
     serialized_mesh_data = msgpack.packb(data_dict)
 
     print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
-
+    verification_mesh_data(serialized_mesh_data)  
     # ここでデシリアライズの確認を行う
     try:
         deserialized_data = msgpack.unpackb(serialized_mesh_data)
@@ -161,7 +139,8 @@ def get_mesh_data():
     depsgraph = bpy.context.evaluated_depsgraph_get()
     obj_eval = obj.evaluated_get(depsgraph)
     temp_mesh = bpy.data.meshes.new_from_object(obj_eval)
-
+    bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    
     # Get vertices and triangles
     vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices]  # この部分を変更
 
@@ -180,4 +159,30 @@ def get_mesh_data():
     print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}, normals={len(normals)}")
     return (vertices, triangles, normals)
 
+def verification_mesh_data(serialized_mesh_data):
+    # 1. メッセージパックからデータをデシリアライズする
+    data_dict = msgpack.unpackb(serialized_mesh_data)
+    
+    # 2. データから頂点、三角形、法線のリストを取得
+    vertices = [(data_dict['vertices'][i], data_dict['vertices'][i+1], data_dict['vertices'][i+2]) for i in range(0, len(data_dict['vertices']), 3)]
 
+    triangles = [(data_dict['triangles'][i], data_dict['triangles'][i+1], data_dict['triangles'][i+2]) for i in range(0, len(data_dict['triangles']), 3)] 
+
+    normals = [(data_dict['normals'][i], data_dict['normals'][i+1], data_dict['normals'][i+2]) for i in range(0, len(data_dict['normals']), 3)]
+
+    
+    # 3. 新しいメッシュを作成
+    mesh = bpy.data.meshes.new(name="VerifiedMesh")
+    mesh.from_pydata(vertices, [], triangles)
+    
+    # 法線を設定 (オプション: 必要に応じてコメントアウトしても良い)
+    mesh.normals_split_custom_set_from_vertices(normals)
+    mesh.use_auto_smooth = True
+    
+    # 4. メッシュをシーンに追加
+    obj = bpy.data.objects.new("VerifiedMeshObject", mesh)
+    bpy.context.collection.objects.link(obj)
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    
+    return obj
