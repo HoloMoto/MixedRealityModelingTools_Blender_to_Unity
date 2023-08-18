@@ -1,13 +1,11 @@
 {
   "name": "com.holomoto.blender_mr_view",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "displayName": "BlenderMRViewforXR",
-  "description": "",
   "unity": "2020.2",
   "repository": {
     "type": "git",
     "url": "git@github.com:HoloMoto/BlenderMRViewForHoloLens.git"
   },
   "samples": []
-
 }
