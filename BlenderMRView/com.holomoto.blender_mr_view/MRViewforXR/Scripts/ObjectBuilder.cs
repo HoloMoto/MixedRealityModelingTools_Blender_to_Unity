@@ -43,9 +43,6 @@ public class ObjectBuilder : MonoBehaviour
          mesh.SetVertices(vertices);
          mesh.SetTriangles(meshData.triangles, 0);
 
-        // Vector3[] vertexNormals = CalculateVertexNormals(vertices, meshData.triangles);
-        // mesh.SetNormals(vertexNormals);
-        
          _meshFilter.mesh = mesh;
          _isGetMeshData = false;
          if (_isFlatShading)
@@ -53,6 +50,11 @@ public class ObjectBuilder : MonoBehaviour
 
          if (_defaultMaterial != null) 
             _meshRenderer.material = _defaultMaterial;
+         else
+         {
+            Vector3[] vertexNormals = CalculateVertexNormals(vertices, meshData.triangles);
+             mesh.SetNormals(vertexNormals);
+         }
 
       }
 

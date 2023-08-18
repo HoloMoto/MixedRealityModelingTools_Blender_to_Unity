@@ -14,11 +14,15 @@ public class TCPClient : MonoBehaviour
     [CanBeNull] private TcpClient _client;
     private NetworkStream _stream;
     ObjectBuilder _objectBuilder;
+    public int _port = 9998;
+    public string _ipAddress = "localhost";
     MeshData mashData = new MeshData();
     public Text connectionStatusText;
+    
+    
     void Start()
     {
-        _client = new TcpClient("localhost", 9998);
+        _client = new TcpClient(_ipAddress, _port);
         _stream = _client.GetStream();
  
         _objectBuilder = GetComponent<ObjectBuilder>();

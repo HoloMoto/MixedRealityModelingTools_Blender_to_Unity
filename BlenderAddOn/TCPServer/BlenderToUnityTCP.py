@@ -77,13 +77,13 @@ def send_mesh_data_to_unity(mesh_data):
     # MessagePackでシリアライズ
     serialized_mesh_data = msgpack.packb(data_dict)
 
-    print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
+    #print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
     verification_mesh_data(serialized_mesh_data)  
     # ここでデシリアライズの確認を行う
     try:
         deserialized_data = msgpack.unpackb(serialized_mesh_data)
         print("Deserialization success!")
-        print(deserialized_data)  # もし必要ならば、デシリアライズされたデータを出力する
+        #print(deserialized_data)  # もし必要ならば、デシリアライズされたデータを出力する
     except Exception as e:
         print(f"Deserialization error: {e}")
         return  # エラーが発生した場合、関数をここで終了する
@@ -91,7 +91,7 @@ def send_mesh_data_to_unity(mesh_data):
     for client in server_thread.clients:
         try:
             client.sendall(serialized_mesh_data)
-            print(serialized_mesh_data)
+            #print(serialized_mesh_data)
           
         except Exception as e:
             print(f"Error while sending mesh data to client: {e}")
@@ -120,6 +120,7 @@ class CustomPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator("object.send_message")
+
 
 bpy.utils.register_class(SimpleOperator)
 bpy.utils.register_class(CustomPanel)

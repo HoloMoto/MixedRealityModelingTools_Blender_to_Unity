@@ -597,6 +597,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31f774f4e4cbdc04d9210e23430fb57a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _port: 9998
+  _ipAddress: 192.168.137.1
   connectionStatusText: {fileID: 1635187115}
 --- !u!114 &1347199847
 MonoBehaviour:
