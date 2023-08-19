@@ -12,10 +12,12 @@ namespace MixedRealityModelingTools.Core
     public class ObjectBuilder : MonoBehaviour
     {
         // The object to be Mesh built (Require a MeshFilter and MeshRenderer)
-        [SerializeField] GameObject _targetObject;
-
+        [SerializeField] GameObject _targetObjectPrefab;
+        GameObject _createdObject;
+        public List<string> _targetObjectNames; 
         public bool _SetBlenderAxis = true;
         MeshFilter _meshFilter;
+        [SerializeField]
         MeshRenderer _meshRenderer;
         [CanBeNull] public Material _defaultMaterial;
         public MeshData meshData;
@@ -23,22 +25,32 @@ namespace MixedRealityModelingTools.Core
         [SerializeField] private bool _isFlatShading = true;
         [HideInInspector] public bool _isGetMeshData = false;
 
-        private void Start()
-        {
-            if (_SetBlenderAxis)
-            {
-                // Rotate to Blender Axis
-                _targetObject.transform.rotation = Quaternion.Euler(-90, 0, 0);
-            }
 
-            _meshFilter = _targetObject.GetComponent<MeshFilter>();
-            _meshRenderer = _targetObject.GetComponent<MeshRenderer>();
-        }
 
         private void Update()
         {
             if (_isGetMeshData)
             {
+                if (!_targetObjectNames.Contains(meshData.objectname))
+                {
+                    _createdObject = Instantiate(_targetObjectPrefab, transform);
+                    _targetObjectNames.Add(meshData.objectname);
+                    _createdObject.name = meshData.objectname;
+                }
+                else
+                {
+                    _createdObject = GameObject.Find(meshData.objectname);
+                }
+
+                if (_SetBlenderAxis)
+                {
+                    // Rotate to Blender Axis
+                    _createdObject.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                }
+
+                _meshFilter = _createdObject.GetComponent<MeshFilter>();
+                _meshRenderer = _createdObject.GetComponent<MeshRenderer>();
+                
                 mesh = new Mesh();
 
                 List<Vector3> vertices = ConvertToVector3List(meshData.vertices);

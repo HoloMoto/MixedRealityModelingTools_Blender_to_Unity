@@ -8,7 +8,9 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 {
     public void Serialize(ref MessagePackWriter writer, MeshData value, MessagePackSerializerOptions options)
     {
-        writer.WriteMapHeader(3);
+        writer.WriteMapHeader(4);
+        writer.Write("objectname");
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.objectname, options);
         writer.Write("vertices");
         options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.vertices, options);
         writer.Write("triangles");
@@ -27,11 +29,12 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
         options.Security.DepthStep(ref reader);
 
         int length = reader.ReadMapHeader();
-        if (length != 3)
+        if (length != 4)
         {
             throw new MessagePackSerializationException("Invalid map length.");
         }
 
+        string objectname = null;
         List<float> vertices = null;
         List<int> triangles = null;
         List<float> normals = null;
@@ -41,6 +44,9 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
             string key = reader.ReadString();
             switch (key)
             {
+                case "objectname":
+                    objectname = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
                 case "vertices":
                     vertices = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
                     break;
@@ -58,7 +64,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 
         reader.Depth--;
 
-        return new MeshData { vertices = vertices, triangles = triangles, normals = normals };
+        return new MeshData { objectname = objectname, vertices = vertices, triangles = triangles, normals = normals };
     }
 }
 

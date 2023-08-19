@@ -69,6 +69,7 @@ def send_mesh_data_to_unity(mesh_data):
 
     # データを辞書として構築
     data_dict = {
+        'objectname' : bpy.context.view_layer.objects.active.name,
         'vertices': vertices_list,
         'triangles': triangles_list,
         'normals': normals_list

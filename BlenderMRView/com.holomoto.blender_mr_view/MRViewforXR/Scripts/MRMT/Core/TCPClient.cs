@@ -55,14 +55,16 @@ namespace MixedRealityModelingTools.Core
                         $"Received {bytesRead} bytes: {BitConverter.ToString(responseBytes, 0, bytesRead).Replace("-", " ")}");
 
                     if (bytesRead == 0) break;
-
+                    
+                    
+                    var meshData = DeserializeMeshData(responseBytes);
+                    Debug.Log(
+                        $"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count}");
+                    _objectBuilder.meshData = meshData;
+                    _objectBuilder._isGetMeshData = true;
                     try
                     {
-                        var meshData = DeserializeMeshData(responseBytes);
-                        Debug.Log(
-                            $"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count}");
-                        _objectBuilder.meshData = meshData;
-                        _objectBuilder._isGetMeshData = true;
+
                     }
                     catch
                     {

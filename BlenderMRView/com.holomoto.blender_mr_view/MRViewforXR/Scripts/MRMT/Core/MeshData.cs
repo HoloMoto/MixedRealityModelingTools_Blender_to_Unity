@@ -12,6 +12,9 @@ namespace MixedRealityModelingTools.Core
     public class MeshData
     {
         [DataMember]
+        public string objectname;
+        
+        [DataMember]
         public List<float> vertices;
     
         [DataMember]

@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 21
+  controlID: 16
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -68,8 +68,8 @@ MonoBehaviour:
     y: 0
     width: 358
     height: 819.3333
-  m_MinSize: {x: 276, y: 71}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 17}
@@ -223,7 +223,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 27
+  controlID: 17
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -248,7 +248,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 28
+  controlID: 18
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -317,21 +317,21 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Packages/com.holomoto.blender_mr_view/MRViewforXR/Scripts/MRMT/Core
+    - Packages/com.holomoto.blender_mr_view/MRViewforXR/Scripts/MRMT/Prefabs
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 53
   m_LastFolders:
-  - Packages/com.holomoto.blender_mr_view/MRViewforXR/Scripts/MRMT/Core
+  - Packages/com.holomoto.blender_mr_view/MRViewforXR/Scripts/MRMT/Prefabs
   m_LastFoldersGridSize: 53
   m_LastProjectPath: D:\UnityProjects\HoloMoto\BlenderMRViewForHoloLens\BlenderMRViewforXR_Unity
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 143}
-    m_SelectedIDs: 5e5b0000
-    m_LastClickedID: 23390
+    m_SelectedIDs: aa5d0000
+    m_LastClickedID: 23978
     m_ExpandedIDs: 00000000305b0000325b0000345b0000365b0000385b00003a5b00003c5b000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -490,7 +490,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: e65a0000
       m_LastClickedID: 23270
-      m_ExpandedIDs: 32fbffff
+      m_ExpandedIDs: 32fbffffe65a0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -506,7 +506,7 @@ MonoBehaviour:
         m_IsRenaming: 0
         m_OriginalEventType: 11
         m_IsRenamingFilename: 0
-        m_ClientGUIView: {fileID: 3}
+        m_ClientGUIView: {fileID: 4}
       m_SearchString: 
     m_ExpandedScenes: []
     m_CurrenRootInstanceID: 0
@@ -591,7 +591,7 @@ MonoBehaviour:
       floating: 0
       collapsed: 0
       displayed: 1
-      snapOffset: {x: 0, y: 0}
+      snapOffset: {x: 0, y: 24.666666}
       snapOffsetDelta: {x: 0, y: 0}
       snapCorner: 0
       id: unity-transform-toolbar
@@ -739,9 +739,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0, y: 0, z: 0}
+    m_Target: {x: 1.0719042, y: 2.0130258, z: -2.0096986}
     speed: 2
-    m_Value: {x: -0.00000005098036, y: 0.000000084181835, z: -0.000000050676242}
+    m_Value: {x: 1.0719042, y: 2.0130258, z: -2.0096986}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -788,13 +788,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.082787514, y: 0.8159895, z: -0.120357364, w: -0.5595296}
+    m_Target: {x: -0.16651128, y: 0.47736505, z: -0.09242319, w: -0.8579718}
     speed: 2
-    m_Value: {x: -0.08313774, y: 0.8142047, z: -0.12009334, w: -0.5619043}
+    m_Value: {x: -0.16621158, y: 0.47987422, z: -0.09291019, w: -0.8564241}
   m_Size:
-    m_Target: 0.8660254
+    m_Target: 1.0062108
     speed: 2
-    m_Value: 0.86602545
+    m_Value: 1.0062108
   m_Ortho:
     m_Target: 0
     speed: 2
