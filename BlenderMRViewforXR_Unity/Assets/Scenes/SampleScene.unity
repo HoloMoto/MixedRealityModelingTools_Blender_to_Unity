@@ -513,6 +513,7 @@ GameObject:
   - component: {fileID: 1347199844}
   - component: {fileID: 1347199846}
   - component: {fileID: 1347199847}
+  - component: {fileID: 1347199848}
   m_Layer: 0
   m_Name: System
   m_TagString: Untagged
@@ -598,8 +599,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _port: 9998
-  _ipAddress: 192.168.137.1
-  connectionStatusText: {fileID: 1635187115}
+  _ipAddress: localhost
+  _connectionState: 0
 --- !u!114 &1347199847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -617,6 +618,21 @@ MonoBehaviour:
   _defaultMaterial: {fileID: 2100000, guid: 866c946b045277d41ad493a5819f347c, type: 2}
   _isFlatShading: 1
   _isGetMeshData: 0
+--- !u!114 &1347199848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1347199841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee8329c04b721aa44a3eda98d2a60686, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tcpClient: {fileID: 1347199846}
+  _connectionTimeout: 5
+  _startConnection: 0
 --- !u!1 &1398551111
 GameObject:
   m_ObjectHideFlags: 0

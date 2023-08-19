@@ -78,7 +78,8 @@ def send_mesh_data_to_unity(mesh_data):
     serialized_mesh_data = msgpack.packb(data_dict)
 
     #print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
-    verification_mesh_data(serialized_mesh_data)  
+    #Verification
+    #verification_mesh_data(serialized_mesh_data)  
     # ここでデシリアライズの確認を行う
     try:
         deserialized_data = msgpack.unpackb(serialized_mesh_data)
@@ -143,7 +144,7 @@ def get_mesh_data():
     bpy.ops.mesh.customdata_custom_splitnormals_clear()
     
     # Get vertices and triangles
-    vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices]  # この部分を変更
+    vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices] 
 
     triangles = []
     for p in temp_mesh.polygons:
@@ -153,7 +154,7 @@ def get_mesh_data():
     obj.modifiers.remove(triangulate_mod)
 
     # Get normals
-    normals = [[v.normal.x, v.normal.y, v.normal.z] for v in temp_mesh.vertices]  # この部分を変更
+    normals = [[v.normal.x, v.normal.y, v.normal.z] for v in temp_mesh.vertices]
 
     # Don't forget to remove the temporary mesh data
     bpy.data.meshes.remove(temp_mesh)
