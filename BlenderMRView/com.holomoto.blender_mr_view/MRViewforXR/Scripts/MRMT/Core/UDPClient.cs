@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using MessagePack;
 using MessagePack.Resolvers;
+using MixedRealityModelingTools.Core;
 public class UDPClient : MonoBehaviour
 {
     public string server = "127.0.0.1";
@@ -52,9 +53,9 @@ public class UDPClient : MonoBehaviour
         int receivedDataLength = await Task.Run(() => socket.ReceiveFrom(buffer, ref serverEndPoint));
         Debug.Log(receivedDataLength);
         MeshData meshData = DeserializeMeshData(buffer, receivedDataLength);
-        Debug.Log("Vertices count after deserialization: " + meshData.Vertices.Count);
-        Debug.Log("Normals count after deserialization: " + meshData.Normals.Count);
-        UpdateMesh(meshData.Vertices, meshData.Indices, meshData.Normals); 
+        Debug.Log("Vertices count after deserialization: " + meshData.vertices.Count);
+        Debug.Log("Normals count after deserialization: " + meshData.normals.Count);
+       // UpdateMesh(meshData.vertices, meshData.triangles, meshData.normals); 
     }
 
     public void EndSession()
@@ -125,17 +126,4 @@ public class UDPClient : MonoBehaviour
         mesh.SetUVs(0, new List<Vector2>(new Vector2[verticestest.Count]));
         meshFilter.mesh = mesh;
     }
-}
-
-[MessagePackObject]
-public class MeshData
-{
-    [Key(0)]
-    public List<Vector3> Vertices { get; set; }
-
-    [Key(1)]
-    public List<int> Indices { get; set; }
-
-    [Key(2)]
-    public List<Vector3> Normals { get; set; } 
 }
