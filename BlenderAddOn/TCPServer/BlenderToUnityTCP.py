@@ -1,3 +1,4 @@
+#version 0.0.12
 import bpy
 import socket
 import threading
