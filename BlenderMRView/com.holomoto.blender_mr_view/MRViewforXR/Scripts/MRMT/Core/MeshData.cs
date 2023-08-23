@@ -39,6 +39,21 @@ namespace MixedRealityModelingTools.Core
         {
             return Instance.GetFormatter<T>();
         }
-    }    
+    }
+    [DataContract]
+    public class MaterialData
+    {
+        [DataMember]
+        public string materialname;
+        
+        [DataMember]
+        public List<float> color;
+    
+        [DataMember]
+        public List<float> smoothness;
+    
+        [DataMember]
+        public List<float> emission;
+    }
 }
 

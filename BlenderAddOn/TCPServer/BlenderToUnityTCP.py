@@ -164,7 +164,7 @@ def get_mesh_data():
     return (vertices, triangles, normals)
 
 def verification_mesh_data(serialized_mesh_data):
-    # 1. メッセージパックからデータをデシリアライズする
+
     data_dict = msgpack.unpackb(serialized_mesh_data)
     
     # 2. データから頂点、三角形、法線のリストを取得
@@ -190,3 +190,16 @@ def verification_mesh_data(serialized_mesh_data):
     obj.select_set(True)
     
     return obj
+
+def get_material_data():
+    selected_objects = bpy.context.selected_objects
+
+    used_materials = set()
+
+    for obj in selected_objects:
+        for slot in obj.material_slots:
+            if slot.material is not None:
+                used_materials.add(slot.material)
+    print(used_materials)
+    return list(used_materials)
+
