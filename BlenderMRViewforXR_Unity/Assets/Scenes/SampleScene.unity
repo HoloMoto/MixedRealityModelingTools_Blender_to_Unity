@@ -467,6 +467,8 @@ MonoBehaviour:
   _defaultMaterial: {fileID: 2100000, guid: 866c946b045277d41ad493a5819f347c, type: 2}
   _isFlatShading: 1
   _isGetMeshData: 0
+  _isGetMaterialData: 0
+  _blenderMat: []
 --- !u!114 &1347199848
 MonoBehaviour:
   m_ObjectHideFlags: 0

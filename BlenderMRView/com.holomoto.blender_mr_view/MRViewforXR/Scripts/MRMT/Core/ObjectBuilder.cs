@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace MixedRealityModelingTools.Core
 {
@@ -14,10 +15,9 @@ namespace MixedRealityModelingTools.Core
         // The object to be Mesh built (Require a MeshFilter and MeshRenderer)
         [SerializeField] GameObject _targetObjectPrefab;
         GameObject _createdObject;
-        public List<string> _targetObjectNames; 
+        public List<string> _targetObjectNames;
         public bool _SetBlenderAxis = true;
         MeshFilter _meshFilter;
-        [SerializeField]
         MeshRenderer _meshRenderer;
         [CanBeNull] public Material _defaultMaterial;
         public MeshData meshData;
@@ -25,6 +25,10 @@ namespace MixedRealityModelingTools.Core
         [SerializeField] private bool _isFlatShading = true;
         [HideInInspector] public bool _isGetMeshData = false;
 
+        [HideInInspector]public bool _isGetMaterialData = false;
+        
+        public MaterialData _materialData;
+        [CanBeNull] public List<Material> _blenderMat = new List<Material>();
 
 
         private void Update()
@@ -50,7 +54,7 @@ namespace MixedRealityModelingTools.Core
 
                 _meshFilter = _createdObject.GetComponent<MeshFilter>();
                 _meshRenderer = _createdObject.GetComponent<MeshRenderer>();
-                
+
                 mesh = new Mesh();
 
                 List<Vector3> vertices = ConvertToVector3List(meshData.vertices);
@@ -66,10 +70,30 @@ namespace MixedRealityModelingTools.Core
                     Vector3[] vertexNormals = CalculateVertexNormals(vertices, meshData.triangles);
                     mesh.SetNormals(vertexNormals);
                 }
-                
+
                 if (_defaultMaterial != null)
                     _meshRenderer.material = _defaultMaterial;
 
+
+                if (_meshRenderer.material.name == _defaultMaterial.name+" (Instance)"   && _blenderMat.Count != 0)
+                {
+                    Debug.Log(_blenderMat.Count);
+                    Debug.Log(_meshRenderer.materials.Length);
+                    for (int i = 0; i < _meshRenderer.materials.Length; i++)
+                    {
+                        _meshRenderer.materials[i] = _blenderMat[i];
+                        Debug.Log(_meshRenderer.materials[i]);
+                    }
+                    //_MeshRendererを更新
+                    _meshRenderer.materials = _blenderMat.ToArray();
+                }
+            }
+
+            if (_isGetMaterialData)
+            {
+                CreateMaterial(_materialData);
+                
+                _isGetMaterialData = false;
             }
         }
 
@@ -131,7 +155,7 @@ namespace MixedRealityModelingTools.Core
         {
             //https://discussions.unity.com/t/flat-shading/117837 
             //ReBuild the mesh with flat shading
-            MeshFilter mf = GetComponent<MeshFilter>();
+            MeshFilter mf = _meshFilter;
             Mesh mesh = Instantiate(mf.sharedMesh) as Mesh;
             _meshFilter.sharedMesh = mesh;
 
@@ -148,6 +172,47 @@ namespace MixedRealityModelingTools.Core
             mesh.vertices = vertices;
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
+        }
+
+
+        public void CreateMaterial(MaterialData materialData)
+        {
+            for (int i = 0; i < materialData.materialname.Count; i++)
+            {
+                if (!_blenderMat.Exists(x => x.name == materialData.materialname[i]))
+                {
+
+                    Material mat = new Material(Shader.Find("Standard"));                        
+                    
+
+                    mat.name = materialData.materialname[i];
+                    mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                    _blenderMat.Add(mat);
+                }
+                else
+                {
+                    //UpdateMaterial
+                    Material mat = _blenderMat.Find(x => x.name == materialData.materialname[i]);
+                    mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                    
+                }
+            }
+        }
+        
+    }
+
+    /// <summary>
+    /// Check URP or Built-in
+    public class EnvironmentDetector
+    {
+        public static bool IsURP()
+        {
+            return GraphicsSettings.renderPipelineAsset != null;
+        }
+
+        public static bool IsBuiltIn()
+        {
+            return GraphicsSettings.renderPipelineAsset == null;
         }
     }
 }

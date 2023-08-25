@@ -12,6 +12,9 @@ namespace MixedRealityModelingTools.Core
     public class MeshData
     {
         [DataMember]
+        public string header;
+        
+        [DataMember]
         public string objectname;
         
         [DataMember]
@@ -40,20 +43,39 @@ namespace MixedRealityModelingTools.Core
             return Instance.GetFormatter<T>();
         }
     }
+
+    public class CustomMaterialResolver : IFormatterResolver
+    {
+        public static readonly IFormatterResolver Instance = CompositeResolver.Create(
+            new IMessagePackFormatter[] { new MeshDataFormatter() }, // MeshDataFormatterを追加
+            new IFormatterResolver[] {
+                MaterialDataResolver.Instance, // MeshDataResolverを追加
+                StandardResolver.Instance,
+                UnityResolver.Instance
+            }
+        ); 
+        public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            return Instance.GetFormatter<T>();
+        }
+    }
     [DataContract]
     public class MaterialData
     {
         [DataMember]
-        public string materialname;
+        public string header;
         
         [DataMember]
-        public List<float> color;
-    
+        public List<string> materialname;
+        
         [DataMember]
-        public List<float> smoothness;
+        public List<float> rgba;
     
-        [DataMember]
-        public List<float> emission;
+     //   [DataMember]
+       // public List<float> smoothness;
+    
+      //  [DataMember]
+      //  public List<float> emission;
     }
 }
 

@@ -67,22 +67,24 @@ def send_mesh_data_to_unity(mesh_data):
     vertices_list = np.array(vertices, dtype='<f4').flatten().tolist()
     triangles_list = np.array(triangles, dtype='<i4').flatten().tolist()
     normals_list = np.array(normals, dtype='<f4').flatten().tolist()
-
-    # データを辞書として構築
+    MESH_HEADER = "MESH"  # メッシュデータのヘッダー
+    # Build data as Dictionary
     data_dict = {
+        'header': MESH_HEADER,
         'objectname' : bpy.context.view_layer.objects.active.name,
         'vertices': vertices_list,
         'triangles': triangles_list,
         'normals': normals_list
     }
 
-    # MessagePackでシリアライズ
+    # serialize MessagePack
     serialized_mesh_data = msgpack.packb(data_dict)
 
     #print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
     #Verification
-    #verification_mesh_data(serialized_mesh_data)  
-    # ここでデシリアライズの確認を行う
+    #verification_mesh_data(serialized_mesh_data)
+      
+    # Check Deserialization
     try:
         deserialized_data = msgpack.unpackb(serialized_mesh_data)
         print("Deserialization success!")
@@ -112,6 +114,16 @@ class SimpleOperator(bpy.types.Operator):
         send_mesh_data_to_unity(mesh_data)
         return {'FINISHED'}
 
+class MaterialSenderOperator(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "object.send_mat"
+    bl_label = "Send Mat"
+
+    def execute(self, context):
+        mat_data =  get_material_data()
+        send_material_data_to_unity(mat_data)
+        return{'FINISHED'}
+
 class CustomPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
     bl_label = "Send Message Panel"
@@ -123,10 +135,11 @@ class CustomPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator("object.send_message")
-
+        layout.operator("object.send_mat")
 
 bpy.utils.register_class(SimpleOperator)
 bpy.utils.register_class(CustomPanel)
+bpy.utils.register_class(MaterialSenderOperator)
 
 def get_mesh_data():
     obj = bpy.context.view_layer.objects.active
@@ -194,12 +207,48 @@ def verification_mesh_data(serialized_mesh_data):
 def get_material_data():
     selected_objects = bpy.context.selected_objects
 
-    used_materials = set()
+    material_names = []
 
     for obj in selected_objects:
+      if obj.type == 'MESH':  # メッシュオブジェクトのみ処理する
         for slot in obj.material_slots:
-            if slot.material is not None:
-                used_materials.add(slot.material)
-    print(used_materials)
-    return list(used_materials)
+            if slot.material:
+                material_names.append(slot.material.name)
 
+    return material_names
+
+def send_material_data_to_unity(mat_data):
+    selected_material_index = 0
+    if selected_material_index < len(mat_data):
+        selected_material_name = mat_data[selected_material_index]
+        selected_material = bpy.data.materials.get(selected_material_name)
+        MAT_HEADER = "MATE"
+        if selected_material:
+            # for use by Principled BSDF Shader Material only
+            base_color_node = selected_material.node_tree.nodes.get("Principled BSDF")
+            if base_color_node:
+              base_color = base_color_node.inputs["Base Color"].default_value
+              print(f"Material: {selected_material_name}")
+              print(f"Base Color (RGBA): ({base_color[0]}, {base_color[1]}, {base_color[2]}, {base_color[3]})")
+
+            rgba = list(base_color)
+            rgba_list = np.array(rgba, dtype='<f4').flatten().tolist()
+
+            # Build data as Dictionary
+            mat_data_dict = {
+                'header': MAT_HEADER,
+                'materialname': [selected_material_name],
+                'rgba': rgba_list
+            }
+
+            # Serialize MessagePack
+            serialized_mat_data = msgpack.packb(mat_data_dict)
+            print("material_Send")
+        else:
+            print("Invalid material index")
+
+        for client in server_thread.clients:
+         try:
+            client.sendall(serialized_mat_data)
+         except Exception as e:
+            print(f"Error while sending mesh data to client: {e}")

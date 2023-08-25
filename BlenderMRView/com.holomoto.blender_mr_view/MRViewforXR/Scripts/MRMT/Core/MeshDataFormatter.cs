@@ -8,7 +8,9 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 {
     public void Serialize(ref MessagePackWriter writer, MeshData value, MessagePackSerializerOptions options)
     {
-        writer.WriteMapHeader(4);
+        writer.WriteMapHeader(5);
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
+        writer.Write("header");
         writer.Write("objectname");
         options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.objectname, options);
         writer.Write("vertices");
@@ -29,11 +31,12 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
         options.Security.DepthStep(ref reader);
 
         int length = reader.ReadMapHeader();
-        if (length != 4)
+        if (length != 5)
         {
             throw new MessagePackSerializationException("Invalid map length.");
         }
 
+        string header = null;
         string objectname = null;
         List<float> vertices = null;
         List<int> triangles = null;
@@ -44,6 +47,9 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
             string key = reader.ReadString();
             switch (key)
             {
+                case "header":
+                    header = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
                 case "objectname":
                     objectname = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
                     break;
@@ -64,7 +70,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 
         reader.Depth--;
 
-        return new MeshData { objectname = objectname, vertices = vertices, triangles = triangles, normals = normals };
+        return new MeshData { header = header ,objectname = objectname, vertices = vertices, triangles = triangles, normals = normals };
     }
 }
 
@@ -85,4 +91,80 @@ public class MeshDataResolver : IFormatterResolver
 
         return StandardResolver.Instance.GetFormatter<T>();
     }
+}
+
+public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
+{
+    public void Serialize(ref MessagePackWriter writer, MaterialData value, MessagePackSerializerOptions options)
+    {
+        writer.WriteMapHeader(3);
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
+        writer.Write("header");
+        writer.Write("materialname");
+        options.Resolver.GetFormatterWithVerify<List<string>>().Serialize(ref writer, value.materialname, options);
+        writer.Write("rgba");
+        options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.rgba, options);
+    }
+
+    public MaterialData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        if (reader.TryReadNil())
+        {
+            return null;
+        }
+
+        options.Security.DepthStep(ref reader);
+
+        int length = reader.ReadMapHeader();
+        if (length != 3)
+        {
+            throw new MessagePackSerializationException("Invalid map length.");
+        }
+
+        string header = null;
+        List<string> materialname = null;
+        List<float> rgba = null;
+
+
+        for (int i = 0; i < length; i++)
+        {
+            string key = reader.ReadString();
+            switch (key)
+            {
+                case "header":
+                    header = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
+                case "materialname":
+                    materialname = options.Resolver.GetFormatterWithVerify<List<string>>().Deserialize(ref reader, options);
+                    break;
+                case "rgba":
+                    rgba = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
+                    break;
+                default:
+                    reader.Skip();
+                    break;
+            }
+        }
+
+        reader.Depth--;
+
+        return new MaterialData { header = header ,materialname = materialname, rgba = rgba };
+    }
+}
+
+public class MaterialDataResolver: IFormatterResolver{
+
+    public static readonly MaterialDataResolver Instance = new MaterialDataResolver();
+        private MaterialDataResolver()
+        {
+            
+        }
+        public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            if (typeof(T) ==typeof(MaterialData))
+            {
+                return (IMessagePackFormatter<T>)new MaterialDataFormatter();
+            }
+            return StandardResolver.Instance.GetFormatter<T>();
+        }
 }
