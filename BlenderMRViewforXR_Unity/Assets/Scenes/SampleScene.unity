@@ -463,7 +463,6 @@ MonoBehaviour:
   _targetObjectPrefab: {fileID: 4568202412815852329, guid: ed1f3aac45ecd534b9c62ea8e18919ee, type: 3}
   _targetObjectNames: []
   _SetBlenderAxis: 1
-  _meshRenderer: {fileID: 0}
   _defaultMaterial: {fileID: 2100000, guid: 866c946b045277d41ad493a5819f347c, type: 2}
   _isFlatShading: 1
   _isGetMeshData: 0

@@ -106,7 +106,7 @@ def send_mesh_data_to_unity(mesh_data):
 class SimpleOperator(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "object.send_message"
-    bl_label = "Send Message"
+    bl_label = "Send Mesh"
 
     def execute(self, context):
        # send_message_to_unity("Hello from Blender!")
@@ -126,7 +126,7 @@ class MaterialSenderOperator(bpy.types.Operator):
 
 class CustomPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
-    bl_label = "Send Message Panel"
+    bl_label = "MixedRealityModelingTools"
     bl_idname = "OBJECT_PT_hello"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
