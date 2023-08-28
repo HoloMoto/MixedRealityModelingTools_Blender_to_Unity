@@ -177,26 +177,30 @@ namespace MixedRealityModelingTools.Core
 
         public void CreateMaterial(MaterialData materialData)
         {
-            for (int i = 0; i < materialData.materialname.Count; i++)
-            {
-                if (!_blenderMat.Exists(x => x.name == materialData.materialname[i]))
+            Debug.Log(materialData.materialname[0]);
+                if (!_blenderMat.Exists(x => x.name == materialData.materialname[0]))
                 {
+                    Material mat;
+                    if (_defaultMaterial != null)
+                    {
+                        mat = new Material(Shader.Find(_defaultMaterial.shader.name));
+                    }
+                    else
+                    {
+                         mat = new Material(Shader.Find("Standard"));
+                    }
 
-                    Material mat = new Material(Shader.Find("Standard"));                        
-                    
-
-                    mat.name = materialData.materialname[i];
+                    mat.name = materialData.materialname[0];
                     mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
                     _blenderMat.Add(mat);
                 }
                 else
                 {
                     //UpdateMaterial
-                    Material mat = _blenderMat.Find(x => x.name == materialData.materialname[i]);
+                    Material mat = _blenderMat.Find(x => x.name == materialData.materialname[0]);
                     mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
                     
                 }
-            }
         }
         
     }

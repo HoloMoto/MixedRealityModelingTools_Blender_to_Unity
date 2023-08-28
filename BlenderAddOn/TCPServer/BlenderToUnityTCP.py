@@ -126,7 +126,7 @@ class MaterialSenderOperator(bpy.types.Operator):
 
 class CustomPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
-    bl_label = "MixedRealityModelingTools"
+    bl_label = "MixedRealityModelingTools for"
     bl_idname = "OBJECT_PT_hello"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -218,37 +218,33 @@ def get_material_data():
     return material_names
 
 def send_material_data_to_unity(mat_data):
-    selected_material_index = 0
-    if selected_material_index < len(mat_data):
-        selected_material_name = mat_data[selected_material_index]
+    for selected_material_name in mat_data:
         selected_material = bpy.data.materials.get(selected_material_name)
         MAT_HEADER = "MATE"
         if selected_material:
-            # for use by Principled BSDF Shader Material only
             base_color_node = selected_material.node_tree.nodes.get("Principled BSDF")
             if base_color_node:
-              base_color = base_color_node.inputs["Base Color"].default_value
-              print(f"Material: {selected_material_name}")
-              print(f"Base Color (RGBA): ({base_color[0]}, {base_color[1]}, {base_color[2]}, {base_color[3]})")
+                base_color = base_color_node.inputs["Base Color"].default_value
+                print(f"Material: {selected_material_name}")
+                print(f"Base Color (RGBA): ({base_color[0]}, {base_color[1]}, {base_color[2]}, {base_color[3]})")
 
-            rgba = list(base_color)
-            rgba_list = np.array(rgba, dtype='<f4').flatten().tolist()
+                rgba = list(base_color)
+                rgba_list = np.array(rgba, dtype='<f4').flatten().tolist()
 
-            # Build data as Dictionary
-            mat_data_dict = {
-                'header': MAT_HEADER,
-                'materialname': [selected_material_name],
-                'rgba': rgba_list
-            }
+                mat_data_dict = {
+                    'header': MAT_HEADER,
+                    'materialname': [selected_material_name],
+                    'rgba': rgba_list
+                }
 
-            # Serialize MessagePack
-            serialized_mat_data = msgpack.packb(mat_data_dict)
-            print("material_Send")
+                serialized_mat_data = msgpack.packb(mat_data_dict)
+                print(serialized_mat_data)
+                print("material_Send")
+                for client in server_thread.clients:
+                    try:
+                        client.sendall(serialized_mat_data)
+                    except Exception as e:
+                        print(f"Error while sending mesh data to client: {e}")
         else:
-            print("Invalid material index")
-
-        for client in server_thread.clients:
-         try:
-            client.sendall(serialized_mat_data)
-         except Exception as e:
+            print("Invalid material name")
             print(f"Error while sending mesh data to client: {e}")

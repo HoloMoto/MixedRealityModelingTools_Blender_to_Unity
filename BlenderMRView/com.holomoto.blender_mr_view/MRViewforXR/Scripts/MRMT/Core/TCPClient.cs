@@ -93,7 +93,7 @@ namespace MixedRealityModelingTools.Core
                 // Mesh data received
                 var meshData = DeserializeMeshData(data, length);
                 Debug.Log($"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count}");
-                _objectBuilder.meshData = meshData;
+                 _objectBuilder.meshData = meshData;
                 _objectBuilder._isGetMeshData = true;
             }
             else if (header == "MATE")
