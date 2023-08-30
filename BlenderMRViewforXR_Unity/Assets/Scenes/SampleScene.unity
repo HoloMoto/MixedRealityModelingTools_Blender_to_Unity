@@ -513,7 +513,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1347199842
 Transform:
   m_ObjectHideFlags: 0
@@ -564,6 +564,9 @@ MonoBehaviour:
   _isGetMeshData: 0
   _isGetMaterialData: 0
   _blenderMat: []
+  _isGetImageData: 0
+  _blenderTexture: []
+  _debugMaterial: {fileID: 2100000, guid: ab0f97f38d4b039458b3a662ebcbf30d, type: 2}
 --- !u!114 &1347199848
 MonoBehaviour:
   m_ObjectHideFlags: 0

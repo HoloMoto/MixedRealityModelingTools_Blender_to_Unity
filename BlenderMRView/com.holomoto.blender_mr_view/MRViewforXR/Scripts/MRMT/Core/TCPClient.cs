@@ -46,7 +46,7 @@ namespace MixedRealityModelingTools.Core
             // Start a new thread to listen for incoming messages
             new Thread(() =>
             {
-                var responseBytes = new byte[33554432]; // サイズを大きくしてデータを適切に受け取る
+                var responseBytes = new byte[536870912]; // サイズを大きくしてデータを適切に受け取る
                 while (true)
                 {
 
@@ -55,29 +55,7 @@ namespace MixedRealityModelingTools.Core
 
                         // Process received data based on header
                         ProcessReceivedData(responseBytes, bytesRead);
-                    
-                    /*
-                    var bytesRead = _stream.Read(responseBytes, 0, responseBytes.Length);
-                    // Get Blender rawData
-                    Debug.Log(
-                        $"Received {bytesRead} bytes: {BitConverter.ToString(responseBytes, 0, bytesRead).Replace("-", " ")}");
-
-                    if (bytesRead == 0) break;
-
-
-                    try
-                    {
-                        var meshData = DeserializeMeshData(responseBytes);
-                        Debug.Log(
-                            $"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count}");
-                        _objectBuilder.meshData = meshData;
-                        _objectBuilder._isGetMeshData = true;
-                    }
-                    catch
-                    {
-                        Debug.Log("Received: " + Encoding.ASCII.GetString(responseBytes, 0, bytesRead));
-                    }
-                    */
+                        
                 }
             }).Start();
             UpdateConnectionStatus();
@@ -102,6 +80,14 @@ namespace MixedRealityModelingTools.Core
                 _objectBuilder._materialData = materialData;
                 _objectBuilder._isGetMaterialData = true;
                 Debug.Log($"Received material data: {materialData.materialname}");
+            }
+            else if (header == "IMGE")
+            {
+                Debug.Log("IMGE");
+                var imageData = DeserializeImageData(data, length);
+                _objectBuilder._ImageData = imageData;
+                _objectBuilder._isGetImageData = true;
+                Debug.Log($"Received image data: {imageData.imagename}");
             }
             else
             {
@@ -160,6 +146,12 @@ namespace MixedRealityModelingTools.Core
         {
             var option = MessagePackSerializerOptions.Standard.WithResolver(CustomMaterialResolver.Instance);
             return MessagePackSerializer.Deserialize<MaterialData>(data, option);
+        }
+
+        ImageData DeserializeImageData(byte[] data, int length)
+        {
+            var option = MessagePackSerializerOptions.Standard.WithResolver(CustomImageResolver.Instance);
+            return MessagePackSerializer.Deserialize<ImageData>(data, option);
         }
     }
 }

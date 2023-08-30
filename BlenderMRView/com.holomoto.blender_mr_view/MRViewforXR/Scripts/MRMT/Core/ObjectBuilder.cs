@@ -31,6 +31,11 @@ namespace MixedRealityModelingTools.Core
         [CanBeNull] public List<Material> _blenderMat = new List<Material>();
 
 
+        public ImageData _ImageData;
+        [HideInInspector] public bool _isGetImageData = false;
+        [CanBeNull]public List<Texture2D> _blenderTexture = new List<Texture2D>();
+
+        [SerializeField] private Material _debugMaterial;
         private void Update()
         {
             if (_isGetMeshData)
@@ -94,6 +99,12 @@ namespace MixedRealityModelingTools.Core
                 CreateMaterial(_materialData);
                 
                 _isGetMaterialData = false;
+            }
+
+            if (_isGetImageData)
+            {
+                CreateTexture();
+                _isGetImageData = false;
             }
         }
 
@@ -201,7 +212,25 @@ namespace MixedRealityModelingTools.Core
                     mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
                     
                 }
+            
         }
+
+        public void CreateTexture()
+        {
+            Texture2D texture = new Texture2D(1, 1); // 仮のサイズを指定
+            byte[] decodedBinaryData = _ImageData.ImageBytes;
+            texture.LoadImage(decodedBinaryData); // バイト配列をTexture2Dに読み込む 
+            texture.name = _ImageData.imagename;
+ 
+
+            // テクスチャをミップマップを含まないように設定（オプション）
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+
+            _debugMaterial.mainTexture = texture;
+            _blenderTexture.Add(texture);
+        }
+
         
     }
 
@@ -219,4 +248,5 @@ namespace MixedRealityModelingTools.Core
             return GraphicsSettings.renderPipelineAsset == null;
         }
     }
+    
 }

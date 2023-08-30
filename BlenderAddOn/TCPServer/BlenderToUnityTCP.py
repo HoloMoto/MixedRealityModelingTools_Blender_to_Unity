@@ -4,6 +4,7 @@ import socket
 import threading
 import msgpack
 import struct
+import base64
 
 class ClientHandler(threading.Thread):
     def __init__(self, client_socket):
@@ -88,10 +89,10 @@ def send_mesh_data_to_unity(mesh_data):
     try:
         deserialized_data = msgpack.unpackb(serialized_mesh_data)
         print("Deserialization success!")
-        #print(deserialized_data)  # もし必要ならば、デシリアライズされたデータを出力する
+        #print(deserialized_data)  
     except Exception as e:
         print(f"Deserialization error: {e}")
-        return  # エラーが発生した場合、関数をここで終了する
+        return  
 
     for client in server_thread.clients:
         try:
@@ -119,9 +120,14 @@ class MaterialSenderOperator(bpy.types.Operator):
     bl_idname = "object.send_mat"
     bl_label = "Send Mat"
 
+    send_base_color_texture: bpy.props.BoolProperty(name="Send BaseColor Texture", default=True)
+
+
     def execute(self, context):
         mat_data =  get_material_data()
-        send_material_data_to_unity(mat_data)
+
+        send_material_data_to_unity(mat_data , self.send_base_color_texture)
+
         return{'FINISHED'}
 
 class CustomPanel(bpy.types.Panel):
@@ -136,10 +142,14 @@ class CustomPanel(bpy.types.Panel):
         layout = self.layout
         layout.operator("object.send_message")
         layout.operator("object.send_mat")
+        layout.prop(context.scene, "send_base_color_texture")
 
 bpy.utils.register_class(SimpleOperator)
 bpy.utils.register_class(CustomPanel)
 bpy.utils.register_class(MaterialSenderOperator)
+bpy.types.Scene.send_base_color_texture = bpy.props.BoolProperty(name="Send BaseColor Texture", default=False)
+
+
 
 def get_mesh_data():
     obj = bpy.context.view_layer.objects.active
@@ -217,7 +227,9 @@ def get_material_data():
 
     return material_names
 
-def send_material_data_to_unity(mat_data):
+def send_material_data_to_unity(mat_data,send_base_color_texture):
+
+
     for selected_material_name in mat_data:
         selected_material = bpy.data.materials.get(selected_material_name)
         MAT_HEADER = "MATE"
@@ -227,6 +239,9 @@ def send_material_data_to_unity(mat_data):
                 base_color = base_color_node.inputs["Base Color"].default_value
                 print(f"Material: {selected_material_name}")
                 print(f"Base Color (RGBA): ({base_color[0]}, {base_color[1]}, {base_color[2]}, {base_color[3]})")
+
+                if send_base_color_texture:
+                    get_texture(selected_material)
 
                 rgba = list(base_color)
                 rgba_list = np.array(rgba, dtype='<f4').flatten().tolist()
@@ -248,3 +263,41 @@ def send_material_data_to_unity(mat_data):
         else:
             print("Invalid material name")
             print(f"Error while sending mesh data to client: {e}")
+
+def get_texture(material):
+    if material.use_nodes:  # check used node
+        nodes = material.node_tree.nodes# get node tree
+        for node in nodes:#ノードの数実行
+            if node.type == 'BSDF_PRINCIPLED':  # プリンシパルBSDFシェーダーノードを検索
+                base_color_socket = node.inputs["Base Color"]
+                if base_color_socket.is_linked:  # BaseColorにリンクがあるかチェック
+                    texture_node = base_color_socket.links[0].from_node
+                    if texture_node.type == 'TEX_IMAGE':  # テクスチャノードを検索
+                        texture = texture_node.image
+                        texture_path = bpy.path.abspath(texture_node.image.filepath)
+                        send_texture_data(texture_path,texture.name)
+
+def send_texture_data(texture_path,texture_name):
+    IMAGE_HEADER = "IMGE"
+
+
+    with open(texture_path, 'rb') as f:
+        image_data = f.read()
+
+    image_data_base64 = base64.b64encode(image_data).decode('utf-8')
+
+    data_dict = {
+        'header': IMAGE_HEADER,
+        'imagename': texture_name,  
+        'imagedata': image_data_base64
+    }
+
+    serialized_image_data = msgpack.packb(data_dict)
+
+    for client in server_thread.clients:
+        try:
+            print(serialized_image_data)
+            client.sendall(serialized_image_data)
+        except Exception as e:
+            print(f"Error while sending image data to client: {e}")
+

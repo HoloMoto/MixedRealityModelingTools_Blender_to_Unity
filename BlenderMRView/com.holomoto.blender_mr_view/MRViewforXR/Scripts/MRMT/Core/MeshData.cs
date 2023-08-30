@@ -1,3 +1,4 @@
+using System;
 using MessagePack;
 using MessagePack.Resolvers;
 using MessagePack.Formatters;
@@ -76,6 +77,36 @@ namespace MixedRealityModelingTools.Core
     
       //  [DataMember]
       //  public List<float> emission;
+    }
+
+    public class CustomImageResolver : IFormatterResolver
+    {
+        public static readonly IFormatterResolver Instance = CompositeResolver.Create(
+            new IMessagePackFormatter[] { new MeshDataFormatter() }, // MeshDataFormatterを追加
+            new IFormatterResolver[] {
+                ImageDataResolver.Instance, // MeshDataResolverを追加
+                StandardResolver.Instance,
+                UnityResolver.Instance
+            }
+        );
+        
+        public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            return Instance.GetFormatter<T>();
+        }
+    }
+    [DataContract]
+    public class ImageData
+    {
+        [DataMember] public string header;
+        
+        [DataMember] public string imagename;
+        
+        [DataMember] public string imagedata; // Base64 encoded image data
+
+        // Add a property to convert Base64 string to byte[]
+        public byte[] ImageBytes => System.Convert.FromBase64String(imagedata);
+        
     }
 }
 

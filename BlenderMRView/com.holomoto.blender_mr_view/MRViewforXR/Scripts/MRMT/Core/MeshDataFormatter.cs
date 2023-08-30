@@ -150,6 +150,8 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
 
         return new MaterialData { header = header ,materialname = materialname, rgba = rgba };
     }
+    
+    
 }
 
 public class MaterialDataResolver: IFormatterResolver{
@@ -167,4 +169,80 @@ public class MaterialDataResolver: IFormatterResolver{
             }
             return StandardResolver.Instance.GetFormatter<T>();
         }
+}
+
+public class ImageDataResolver : IFormatterResolver
+{
+    public static readonly  ImageDataResolver Instance = new ImageDataResolver();
+    private ImageDataResolver()
+    {
+        
+    }
+    public IMessagePackFormatter<T> GetFormatter<T>()
+    {
+        if (typeof(T) == typeof(ImageData))
+        {
+            return (IMessagePackFormatter<T>)new ImageDataFormatter();
+        }
+        return StandardResolver.Instance.GetFormatter<T>();
+    }
+    
+}
+
+public class ImageDataFormatter:IMessagePackFormatter<ImageData>
+{
+
+    public void Serialize(ref MessagePackWriter writer, ImageData value, MessagePackSerializerOptions options)
+    {
+        writer.WriteMapHeader(3);
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.imagename, options);
+        options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.imagedata, options);
+        
+    }
+    public ImageData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        if (reader.TryReadNil())
+        {
+            return null;
+        }
+
+        options.Security.DepthStep(ref reader);
+
+        int length = reader.ReadMapHeader();
+        if (length != 3)
+        {
+            throw new MessagePackSerializationException("Invalid map length.");
+        }
+
+        string header = null;
+        string imagename = null;
+        string imagedata = null;
+
+        for (int i = 0; i < length; i++)
+        {
+            string key = reader.ReadString();
+            switch (key)
+            {
+                case "header":
+                    header = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
+                case "imagename":
+                    imagename = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
+                case "imagedata":
+                    imagedata = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                    break;
+                default:
+                    reader.Skip();
+                    break;
+            }
+        }
+
+        reader.Depth--;
+
+        Debug.Log(imagedata);
+        return new ImageData { header = header, imagename = imagename, imagedata = imagedata };
+    }
+    
 }
