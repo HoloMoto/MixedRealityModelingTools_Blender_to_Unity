@@ -79,10 +79,10 @@ namespace MixedRealityModelingTools.Core
                 if (_defaultMaterial != null)
                     _meshRenderer.material = _defaultMaterial;
 
-
+                Debug.Log(_blenderMat.Count);
                 if (_meshRenderer.material.name == _defaultMaterial.name+" (Instance)"   && _blenderMat.Count != 0)
                 {
-                    Debug.Log(_blenderMat.Count);
+
                     Debug.Log(_meshRenderer.materials.Length);
                     for (int i = 0; i < _meshRenderer.materials.Length; i++)
                     {
@@ -188,7 +188,7 @@ namespace MixedRealityModelingTools.Core
 
         public void CreateMaterial(MaterialData materialData)
         {
-            Debug.Log(materialData.materialname[0]);
+                Debug.Log(materialData.materialname[0]);
                 if (!_blenderMat.Exists(x => x.name == materialData.materialname[0]))
                 {
                     Material mat;
@@ -229,6 +229,14 @@ namespace MixedRealityModelingTools.Core
 
             _debugMaterial.mainTexture = texture;
             _blenderTexture.Add(texture);
+
+            if (_blenderMat.Count > 0)
+            {
+                //Debug
+                _blenderMat[0].mainTexture = texture;
+            }
+
+
         }
 
         

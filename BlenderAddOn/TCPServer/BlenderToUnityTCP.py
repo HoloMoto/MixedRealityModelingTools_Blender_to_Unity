@@ -5,6 +5,8 @@ import threading
 import msgpack
 import struct
 import base64
+import math
+from mathutils import Quaternion
 
 class ClientHandler(threading.Thread):
     def __init__(self, client_socket):
@@ -17,7 +19,8 @@ class ClientHandler(threading.Thread):
                 request = self.client_socket.recv(1024)
                 if not request:
                     break
-                print("[*] Received: %s" % request.decode())
+                process_received_data(request)
+                print("[*] Received:", request)
         except Exception as e:
             print(f"Error while handling client: {e}")
         finally:
@@ -301,3 +304,29 @@ def send_texture_data(texture_path,texture_name):
         except Exception as e:
             print(f"Error while sending image data to client: {e}")
 
+def update_camera_position(new_position,new_rotation):
+    camera = bpy.data.objects.get("Camera")  # カメラオブジェクトの名前を指定
+    if camera:
+        print(new_rotation)
+        camera.location = new_position
+        camera_rotation_rad = [math.radians(angle) for angle in new_rotation]
+        camera.rotation_euler = camera_rotation_rad
+        bpy.context.view_layer.update()
+        print("Camera position updated:", new_position)
+    else:
+        print("Camera not found in the scene.")
+
+def process_received_data(request):
+    try:
+        data = msgpack.unpackb(request, raw=False)
+        header = data[0]
+
+        if header == 'UCAM':
+            position = data[1]
+            rotation = data[2]
+            update_camera_position(position,rotation)
+        else:
+            print("Unknown header:", header)
+
+    except Exception as e:
+        print(f"Error while processing received data: {e}")

@@ -30,6 +30,7 @@ namespace MixedRealityModelingTools.Core
         /// </summary>
         [HideInInspector] public ConnectionState _connectionState;
 
+        [SerializeField,CanBeNull,Tooltip("Option(Unity Data Send to Blender)")] private UnitySendData _unitySendData;
         public enum ConnectionState
         {
             Disconnected,
@@ -100,8 +101,13 @@ namespace MixedRealityModelingTools.Core
             // Send a message when the H key is pressed
             if (Input.GetKeyDown(KeyCode.H))
             {
-                var bytes = Encoding.ASCII.GetBytes("Hello, Blender!");
-                _stream.Write(bytes, 0, bytes.Length);
+                //var bytes = Encoding.ASCII.GetBytes("Hello, Blender!");
+                //_stream.Write(bytes, 0, bytes.Length); 
+                
+                var bytes = _unitySendData.SendCameraTransformData();
+                Debug.Log(BitConverter.ToString(bytes).Replace("-", ""));
+            
+                _stream.Write(_unitySendData.SendCameraTransformData(), 0, _unitySendData.SendCameraTransformData().Length);
             }
 
             UpdateConnectionStatus();
@@ -153,5 +159,6 @@ namespace MixedRealityModelingTools.Core
             var option = MessagePackSerializerOptions.Standard.WithResolver(CustomImageResolver.Instance);
             return MessagePackSerializer.Deserialize<ImageData>(data, option);
         }
+        
     }
 }
