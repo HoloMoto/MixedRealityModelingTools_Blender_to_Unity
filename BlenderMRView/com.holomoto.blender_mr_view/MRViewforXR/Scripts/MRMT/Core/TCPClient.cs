@@ -104,14 +104,12 @@ namespace MixedRealityModelingTools.Core
                 //var bytes = Encoding.ASCII.GetBytes("Hello, Blender!");
                 //_stream.Write(bytes, 0, bytes.Length); 
                 
-                var bytes = _unitySendData.SendCameraTransformData();
-                Debug.Log(BitConverter.ToString(bytes).Replace("-", ""));
-            
-                _stream.Write(_unitySendData.SendCameraTransformData(), 0, _unitySendData.SendCameraTransformData().Length);
+               SendCameraDataToUnity();
             }
 
             UpdateConnectionStatus();
         }
+        
 
         void UpdateConnectionStatus()
         {
@@ -140,6 +138,13 @@ namespace MixedRealityModelingTools.Core
             _client.Close();
         }
 
+        public void SendCameraDataToUnity()
+        {
+            var bytes = _unitySendData.SendCameraTransformData();
+            Debug.Log(BitConverter.ToString(bytes).Replace("-", ""));
+            
+            _stream.Write(_unitySendData.SendCameraTransformData(), 0, _unitySendData.SendCameraTransformData().Length);
+        }
         //////////////////ConvertData//////////////////
         MeshData DeserializeMeshData(byte[] data ,int length)
         {
