@@ -13,6 +13,9 @@ namespace MixedRealityModelingTools.Core
     public class UnitySendData : MonoBehaviour
     {
         public Camera _camera ;
+
+        [SerializeField] GameObject _blenderOringTarget;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -27,21 +30,31 @@ namespace MixedRealityModelingTools.Core
 
         public byte[] SendCameraTransformData()
         {
+
             Transform cameraTransform = _camera.transform;
+            Transform targetTransform = _blenderOringTarget.transform;
+
+            // カメラの位置を _blenderOringTarget を基準に変換
+            Vector3 relativePosition = targetTransform.InverseTransformPoint(cameraTransform.position);
+
+            // カメラの回転を _blenderOringTarget を基準に変換
+            Quaternion relativeRotation = Quaternion.Inverse(targetTransform.rotation) * cameraTransform.rotation;
             UnityCameraData cameraData = new UnityCameraData
             {
                 header = "UCAM",
+                //It is aligned with Blender's coordinate axes. (In Blender, the Z axis is the vertical axis.)
+                //The rotation angle is also aligned with the Blender axis. (In Blender, when the X axis is 0, the figure faces vertically down, so it is set to +90 so that it faces horizontally.)
                 cameratransform = new List<float>
                 {
-                    cameraTransform.position.x,
-                    cameraTransform.position.z,
-                    cameraTransform.position.y
+                    relativePosition.x,
+                    relativePosition.z,
+                    relativePosition.y
                 },
                 camerarotation = new List<float>
                 {
-                    cameraTransform.eulerAngles.x +90,
-                    cameraTransform.eulerAngles.z,
-                    cameraTransform.eulerAngles.y
+                    -relativeRotation.eulerAngles.x +90,
+                    -relativeRotation.eulerAngles.z,
+                    -relativeRotation.eulerAngles.y
                 }
             };
             
