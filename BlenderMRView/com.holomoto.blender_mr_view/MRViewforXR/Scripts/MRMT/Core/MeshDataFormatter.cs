@@ -8,7 +8,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 {
     public void Serialize(ref MessagePackWriter writer, MeshData value, MessagePackSerializerOptions options)
     {
-        writer.WriteMapHeader(5);
+        writer.WriteMapHeader(6);
         options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
         writer.Write("header");
         writer.Write("objectname");
@@ -19,6 +19,8 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
         options.Resolver.GetFormatterWithVerify<List<int>>().Serialize(ref writer, value.triangles, options);
         writer.Write("normals");
         options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.normals, options);
+        writer.Write("uvs");
+        options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.uvs ,options );
     }
 
     public MeshData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -31,7 +33,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
         options.Security.DepthStep(ref reader);
 
         int length = reader.ReadMapHeader();
-        if (length != 5)
+        if (length != 6)
         {
             throw new MessagePackSerializationException("Invalid map length.");
         }
@@ -41,6 +43,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
         List<float> vertices = null;
         List<int> triangles = null;
         List<float> normals = null;
+        List<float> uvs =null;
 
         for (int i = 0; i < length; i++)
         {
@@ -62,6 +65,9 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
                 case "normals":
                     normals = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
                     break;
+                case "uvs":
+                uvs = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader ,options);
+                    break;
                 default:
                     reader.Skip();
                     break;
@@ -70,7 +76,7 @@ public class MeshDataFormatter : IMessagePackFormatter<MeshData>
 
         reader.Depth--;
 
-        return new MeshData { header = header ,objectname = objectname, vertices = vertices, triangles = triangles, normals = normals };
+        return new MeshData { header = header ,objectname = objectname, vertices = vertices, triangles = triangles, normals = normals, uvs= uvs };
     }
 }
 

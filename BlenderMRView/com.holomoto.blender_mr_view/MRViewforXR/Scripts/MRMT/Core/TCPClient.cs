@@ -50,7 +50,6 @@ namespace MixedRealityModelingTools.Core
                 var responseBytes = new byte[536870912]; // サイズを大きくしてデータを適切に受け取る
                 while (true)
                 {
-
                         var bytesRead = _stream.Read(responseBytes, 0, responseBytes.Length);
                         if (bytesRead == 0) break;
 
@@ -71,8 +70,15 @@ namespace MixedRealityModelingTools.Core
             {
                 // Mesh data received
                 var meshData = DeserializeMeshData(data, length);
-                Debug.Log($"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count}");
-                 _objectBuilder.meshData = meshData;
+                Debug.Log($"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count},uvs={meshData.uvs.Count}");
+  Debug.Log("UVs:");
+for (int i = 0; i < meshData.uvs.Count; i += 2)
+{
+    float u = meshData.uvs[i];
+    float v = meshData.uvs[i + 1];
+    Debug.Log($"UV[{i / 2}]: ({u}, {v})");
+}
+                _objectBuilder.meshData = meshData;
                 _objectBuilder._isGetMeshData = true;
             }
             else if (header == "MATE")
@@ -106,7 +112,6 @@ namespace MixedRealityModelingTools.Core
                 
                SendCameraDataToUnity();
             }
-
             UpdateConnectionStatus();
         }
         
