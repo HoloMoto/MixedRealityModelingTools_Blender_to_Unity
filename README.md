@@ -4,26 +4,26 @@ This repository is a prototype for setting up a server directly in Blender witho
 
 　Since Blender 3.x it is possible to use VR sessions using MetaQuest or PCVR.
  
- 　The problem with this is that it is difficult to model with keyboard input or mouse operation while wearing an HMD.
+ The problem with this is that it is difficult to model with keyboard input or mouse operation while wearing an HMD.
 
-　We are mainly aiming for interactive modeling while wearing an XR device.
+We are mainly aiming for interactive modeling while wearing an XR device.
 
-
-# MixedRealiyModelingTools 日本語
-
-　本リポジトリはUnityMeshSyncを使用せずにBlenderで直接サーバーを立ててローカルネットワーク内でUnity製アプリおよびエディタに現在選択しているメッシュデータを送信するパッケージです。
-
-　Blender3.x以降で搭載されたVRSessionによってモデリングをxRデバイスでリアルタイムに見ることができるようになりましたが問題点として、HMDをかけながらキーボード入力やマウス操作を行いモデリングを行うことは困難でした。
-
-　本パッケージではUnity製アプリとBlenderを同期することを目的としています。パッケージ自体はXRデバイスに依存をさせていませんが、主にXRデバイスをかけながら双方向にモデリングを行うことを目指しています。
+　This package consists of a Blender add-on for sending and receiving various information within Blender and plugins for bidirectional data communication with Mixed Reality application development engines like Unity, UE5, StereoKit, Babylon.js, and others.
  
- 
- # 環境
- 
- ・Unity 2021.3.5f1(LTS)
- 
- ・Blender 3.4
 
- #ブランチ
+## How to Use 
 
- 現時点でholomoto/TCPブランチで開発を行っています。
+Please install the Blender add-on(from Release Page).
+
+
+With the object you want to send selected in Blender, you should see the MixedRealityModelingTools tab in the Object Properties tab. When connected to the client, you can click "Send To Mesh" to send it.
+
+On the Unity side, you can install it as a UPM (Unity Package Manager).
+
+
+## Other
+
+
+This project is being developed as an open-source project. We appreciate everyone's opinions and contributions.
+
+Also, please remember that it's still a work in progress at this point.
