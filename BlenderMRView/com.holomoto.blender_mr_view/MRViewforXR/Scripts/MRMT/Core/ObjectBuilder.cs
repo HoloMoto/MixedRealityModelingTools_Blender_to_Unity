@@ -78,12 +78,13 @@ namespace MixedRealityModelingTools.Core
                    Vector3 v0 = vertices[meshData.triangles[i]];
                    Vector3 v1 = vertices[meshData.triangles[i + 1]];
                    Vector3 v2 = vertices[meshData.triangles[i + 2]];
-                   Debug.Log("v0;"+v0+",v1;"+v1+",v2;"+v2);
+                
                    Vector3 normal = Vector3.Cross(v1 - v0, v2 - v0).normalized;
 
-                   Vector2 uv0 = new Vector2(meshData.uvs[i], meshData.uvs[i+1]);
-                   Vector2 uv1 = new Vector2(meshData.uvs[i+2], meshData.uvs[i+3]);
-                   Vector2 uv2 = new Vector2(meshData.uvs[i+4], meshData.uvs[i+5]);
+                   Debug.Log(i);
+                   Vector2 uv0 = new Vector2(meshData.uvs[i*2], meshData.uvs[i*2+1]);
+                   Vector2 uv1 = new Vector2(meshData.uvs[i*2+2], meshData.uvs[i*2+3]);
+                   Vector2 uv2 = new Vector2(meshData.uvs[i*2+4], meshData.uvs[i*2+5]);
                    Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
                    uvs.Add(uv0);
                    uvs.Add(uv1);
@@ -115,7 +116,7 @@ namespace MixedRealityModelingTools.Core
                 if (_defaultMaterial != null)
                     _meshRenderer.material = _defaultMaterial;
 
-                Debug.Log(_blenderMat.Count);
+
                 if (_meshRenderer.material.name == _defaultMaterial.name+" (Instance)"   && _blenderMat.Count != 0)
                 {
 
