@@ -1,4 +1,4 @@
-#version 0.0.12
+#version 0.1.0
 import bpy
 import socket
 import threading
@@ -7,6 +7,7 @@ import struct
 import base64
 import math
 from mathutils import Quaternion
+import numpy as np
 
 class ClientHandler(threading.Thread):
     def __init__(self, client_socket):
@@ -61,16 +62,23 @@ def send_message_to_unity(message):
         except Exception as e:
             print(f"Error while sending message to client: {e}")
             
-import numpy as np
-
 
 def send_mesh_data_to_unity(mesh_data):
-    vertices, triangles, normals = mesh_data
-
+    vertices, triangles, normals, uvs  = mesh_data 
+   
     # Convert numpy arrays to list
     vertices_list = np.array(vertices, dtype='<f4').flatten().tolist()
     triangles_list = np.array(triangles, dtype='<i4').flatten().tolist()
     normals_list = np.array(normals, dtype='<f4').flatten().tolist()
+    uvs_list = np.array(uvs, dtype='<f4').flatten().tolist()
+
+        # Debug: Print UV values
+    print("UV Values:")
+    for i in range(0, len(uvs_list), 2):
+        uv_x = uvs_list[i]
+        uv_y = uvs_list[i + 1]
+        print(f"UV[{i//2}]: ({uv_x}, {uv_y})")
+    
     MESH_HEADER = "MESH"  # メッシュデータのヘッダー
     # Build data as Dictionary
     data_dict = {
@@ -78,7 +86,8 @@ def send_mesh_data_to_unity(mesh_data):
         'objectname' : bpy.context.view_layer.objects.active.name,
         'vertices': vertices_list,
         'triangles': triangles_list,
-        'normals': normals_list
+        'normals': normals_list,
+        'uvs': uvs_list
     }
 
     # serialize MessagePack
@@ -100,7 +109,7 @@ def send_mesh_data_to_unity(mesh_data):
     for client in server_thread.clients:
         try:
             client.sendall(serialized_mesh_data)
-            #print(serialized_mesh_data)
+            print(serialized_mesh_data)
           
         except Exception as e:
             print(f"Error while sending mesh data to client: {e}")
@@ -178,6 +187,13 @@ def get_mesh_data():
     for p in temp_mesh.polygons:
         triangles.extend(p.vertices)
 
+    uvs = []
+    for p in temp_mesh.polygons:
+            for loop_index in p.loop_indices:
+                uv = temp_mesh.uv_layers.active.data[loop_index].uv
+                uvs.extend([uv.x, uv.y])
+
+
     # Remove Triangulate modifier
     obj.modifiers.remove(triangulate_mod)
 
@@ -186,8 +202,8 @@ def get_mesh_data():
 
     # Don't forget to remove the temporary mesh data
     bpy.data.meshes.remove(temp_mesh)
-    print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}, normals={len(normals)}")
-    return (vertices, triangles, normals)
+    print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}, normals={len(normals)}, uvs={len(uvs)}")
+    return (vertices, triangles, normals ,uvs)
 
 def verification_mesh_data(serialized_mesh_data):
 

@@ -26,6 +26,9 @@ namespace MixedRealityModelingTools.Core
     
         [DataMember]
         public List<float> normals;
+        
+        [DataMember]
+        public List<float> uvs;
     }
     public class CustomResolver : IFormatterResolver
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -65,6 +66,41 @@ namespace MixedRealityModelingTools.Core
                 List<Vector3> vertices = ConvertToVector3List(meshData.vertices);
                 mesh.SetVertices(vertices);
                 mesh.SetTriangles(meshData.triangles, 0);
+                if (meshData.uvs != null && meshData.uvs.Count > 0)
+                {
+                     List<int> triangles_output = new List<int>();
+                    List<Vector3> vertices_output = new List<Vector3>();
+                   List<Vector2> _list_uv =  ConvertToVector2List(meshData.uvs);
+                   List<Vector2> uvs = new List<Vector2>();
+
+                   for(int i =0 ; i< meshData.triangles.Count;i +=3 ){
+  
+                   Vector3 v0 = vertices[meshData.triangles[i]];
+                   Vector3 v1 = vertices[meshData.triangles[i + 1]];
+                   Vector3 v2 = vertices[meshData.triangles[i + 2]];
+                   Debug.Log("v0;"+v0+",v1;"+v1+",v2;"+v2);
+                   Vector3 normal = Vector3.Cross(v1 - v0, v2 - v0).normalized;
+
+                   Vector2 uv0 = new Vector2(meshData.uvs[i], meshData.uvs[i+1]);
+                   Vector2 uv1 = new Vector2(meshData.uvs[i+2], meshData.uvs[i+3]);
+                   Vector2 uv2 = new Vector2(meshData.uvs[i+4], meshData.uvs[i+5]);
+                   Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
+                   uvs.Add(uv0);
+                   uvs.Add(uv1);
+                   uvs.Add(uv2);
+                
+                   vertices_output.Add(v0);
+                   vertices_output.Add(v1);
+                   vertices_output.Add(v2);
+
+                   triangles_output.Add(i);
+                   triangles_output.Add(i + 1);
+                   triangles_output.Add(i + 2);
+                   }
+                   mesh.vertices = vertices_output.ToArray();
+                   mesh.triangles = triangles_output.ToArray();
+                   mesh.uv = uvs.ToArray();
+                }
 
                 _meshFilter.mesh = mesh;
                 _isGetMeshData = false;
@@ -123,6 +159,21 @@ namespace MixedRealityModelingTools.Core
 
             return result;
         }
+        private List<Vector2> ConvertToVector2List(List<float> floats)
+        {
+          if (floats.Count % 2 != 0)
+          {
+                 throw new ArgumentException("The float list cannot be divided into groups of two for UV coordinates.");
+          }
+
+    List<Vector2> result = new List<Vector2>(floats.Count / 2);
+    for (int i = 0; i < floats.Count; i += 2)
+    {
+        result.Add(new Vector2(floats[i], floats[i + 1]));
+    }
+
+    return result;
+}
 
         /// <summary>
         /// Smooth Shading 
@@ -235,8 +286,6 @@ namespace MixedRealityModelingTools.Core
                 //Debug
                 _blenderMat[0].mainTexture = texture;
             }
-
-
         }
 
         
