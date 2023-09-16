@@ -1,3 +1,15 @@
+bl_info = {
+    "name": "MixedRealityModelingTools",
+    "author": "Your Name",
+    "version": (0, 0,9,2),
+    "blender": (3, 4, 0),
+    "location": "View3D > UI > My Panel",
+    "description": "MixedRealityModelingTools",
+    "warning": "",
+    "doc_url": "",
+    "category": "3D View",
+}
+
 #version 0.0.92
 import bpy
 import socket
@@ -9,6 +21,58 @@ import math
 from mathutils import Quaternion
 import numpy as np
 
+#MainSettings
+class MixedRealityModelingToolsOperator(bpy.types.Operator):
+    bl_idname = "object.hello_world"
+    bl_label = "Start Server"
+
+    
+
+    server_text_input: bpy.props.StringProperty(name="Server")
+    port_text_input: bpy.props.StringProperty(name="port")
+    
+
+    def execute(self, context):
+
+        server_address = self.server_text_input
+        port = int(self.port_text_input)
+
+        server_thread = ServerThread(server_address, port)
+        server_thread.start()
+        self.report({'INFO'}, f"Server started on {server_address}:{port}")
+        return {'FINISHED'}
+    
+class MixedRealityModelingToolsSettingsPanel(bpy.types.Panel):
+    bl_label = "MRModelingTools"
+    bl_idname = "OBJECT_PT_settings_ModelingTools"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'MRMT'
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.prop(context.scene, "server_text_input")
+        layout.prop(context.scene, "port_text_input")
+        layout.operator("object.start_server")
+
+class StartServerOperator(bpy.types.Operator):
+    bl_idname = "object.start_server"
+    bl_label = "Start Server"
+
+    def execute(self, context):
+        # サーバーアドレスとポート番号を取得
+        server_address = context.scene.server_text_input
+        port = int(context.scene.port_text_input)
+
+        # サーバースレッドを作成して開始
+        server_thread = ServerThread(server_address, port)
+        server_thread.start()
+
+        # メッセージを表示
+        self.report({'INFO'}, f"Server started on {server_address}:{port}")
+        return {'FINISHED'}
+       
 class ClientHandler(threading.Thread):
     def __init__(self, client_socket):
         threading.Thread.__init__(self)
@@ -47,13 +111,17 @@ class ServerThread(threading.Thread):
             client_handler.start()
             self.clients.append(client)
 
+            
+
     def close_all_clients(self):
         for client in self.clients:
             client.close()
 
+
 # Run the server in a new thread
-server_thread = ServerThread("0.0.0.0", 9998)
-server_thread.start()
+#server_thread = ServerThread("0.0.0.0", 9998)
+#server_thread.start()
+
 
 def send_message_to_unity(message):
     for client in server_thread.clients:
@@ -153,11 +221,19 @@ class CustomPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator("object.send_message")
+        layout.prop(context.scene, "MRMT_AutoUpdateToggle")
         layout.operator("object.send_mat")
         layout.prop(context.scene, "send_base_color_texture")
 
+bpy.utils.register_class(MixedRealityModelingToolsOperator)
+bpy.types.Scene.server_text_input = bpy.props.StringProperty(name="Server",default = "0.0.0.0")
+bpy.types.Scene.port_text_input = bpy.props.StringProperty(name = "Port",default = "9998")
+bpy.utils.register_class(MixedRealityModelingToolsSettingsPanel)
+bpy.utils.register_class(StartServerOperator)
+
 bpy.utils.register_class(SimpleOperator)
 bpy.utils.register_class(CustomPanel)
+bpy.types.Scene.MRMT_AutoUpdateToggle = bpy.props.BoolProperty(name="Auto Update(/3sec)",default = False)
 bpy.utils.register_class(MaterialSenderOperator)
 bpy.types.Scene.send_base_color_texture = bpy.props.BoolProperty(name="Send BaseColor Texture", default=False)
 
@@ -346,3 +422,5 @@ def process_received_data(request):
 
     except Exception as e:
         print(f"Error while processing received data: {e}")
+
+
