@@ -56,11 +56,25 @@ class MixedRealityModelingToolsSettingsPanel(bpy.types.Panel):
         layout.prop(context.scene, "port_text_input")
         layout.operator("object.start_server")
 
+server_thread = None
+
 class StartServerOperator(bpy.types.Operator):
     bl_idname = "object.start_server"
     bl_label = "Start Server"
 
     def execute(self, context):
+        global server_thread  # グローバル変数として宣言
+        # サーバーアドレスとポート番号を取得
+        server_address = context.scene.server_text_input
+        port = int(context.scene.port_text_input)
+
+        # サーバースレッドを作成して開始
+        server_thread = ServerThread(server_address, port)
+        server_thread.start()
+
+        # メッセージを表示
+        self.report({'INFO'}, f"Server started on {server_address}:{port}")
+        return {'FINISHED'}
         # サーバーアドレスとポート番号を取得
         server_address = context.scene.server_text_input
         port = int(context.scene.port_text_input)
@@ -114,13 +128,17 @@ class ServerThread(threading.Thread):
             
 
     def close_all_clients(self):
-        for client in self.clients:
-            client.close()
+        global server_thread  # グローバル変数を参照
+        if server_thread is not None:
+            for client in self.clients:
+                client.close()
+        else:
+                print("Server thread is not initialized.")
 
 
 # Run the server in a new thread
-#server_thread = ServerThread("0.0.0.0", 9998)
-#server_thread.start()
+server_thread = ServerThread("0.0.0.0", 9998)
+server_thread.start()
 
 
 def send_message_to_unity(message):
