@@ -5,6 +5,9 @@ using System.Threading;
 using JetBrains.Annotations;
 using UnityEngine;
 using MessagePack;
+using UnityEditor.PackageManager.Requests;
+using MessagePack.Resolvers;
+using MessagePack.Formatters;
 
 
 namespace MixedRealityModelingTools.Core
@@ -30,7 +33,11 @@ namespace MixedRealityModelingTools.Core
         /// </summary>
         [HideInInspector] public ConnectionState _connectionState;
 
+        /// <summary>
+        /// You can use "serialization" when sending Unity-specific data formats, such as camera information, in English.
+        /// </summary>
         [SerializeField,CanBeNull,Tooltip("Option(Unity Data Send to Blender)")] private UnitySendData _unitySendData;
+
         public enum ConnectionState
         {
             Disconnected,
@@ -71,13 +78,13 @@ namespace MixedRealityModelingTools.Core
                 // Mesh data received
                 var meshData = DeserializeMeshData(data, length);
                 Debug.Log($"Received mesh data: vertices={meshData.vertices.Count}, triangles={meshData.triangles.Count}, normals={meshData.normals.Count},uvs={meshData.uvs.Count}");
-  Debug.Log("UVs:");
-for (int i = 0; i < meshData.uvs.Count; i += 2)
-{
-    float u = meshData.uvs[i];
-    float v = meshData.uvs[i + 1];
-    Debug.Log($"UV[{i / 2}]: ({u}, {v})");
-}
+ 
+               for (int i = 0; i < meshData.uvs.Count; i += 2)
+                {
+                   float u = meshData.uvs[i];
+                   float v = meshData.uvs[i + 1];
+                //   Debug.Log($"UV[{i / 2}]: ({u}, {v})");
+                }
                 _objectBuilder.meshData = meshData;
                 _objectBuilder._isGetMeshData = true;
             }
@@ -104,17 +111,20 @@ for (int i = 0; i < meshData.uvs.Count; i += 2)
 
         void Update()
         {
-            // Send a message when the H key is pressed
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                //var bytes = Encoding.ASCII.GetBytes("Hello, Blender!");
-                //_stream.Write(bytes, 0, bytes.Length); 
-                
-               SendCameraDataToUnity();
-            }
-            UpdateConnectionStatus();
+
         }
         
+        /// <summary>
+        /// It would "request a mesh from Blender."
+        /// </summary>
+       public void RequestBlenderMesh(){ 
+            var bytes = _unitySendData.SendUnityRequestData();
+            
+            _stream.Write(bytes, 0, bytes.Length);
+
+       }
+
+
 
         void UpdateConnectionStatus()
         {
@@ -169,6 +179,5 @@ for (int i = 0; i < meshData.uvs.Count; i += 2)
             var option = MessagePackSerializerOptions.Standard.WithResolver(CustomImageResolver.Instance);
             return MessagePackSerializer.Deserialize<ImageData>(data, option);
         }
-        
     }
 }

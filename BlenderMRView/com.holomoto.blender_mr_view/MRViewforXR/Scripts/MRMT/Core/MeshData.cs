@@ -109,7 +109,6 @@ namespace MixedRealityModelingTools.Core
 
         // Add a property to convert Base64 string to byte[]
         public byte[] ImageBytes => System.Convert.FromBase64String(imagedata);
-        
     }
 }
 

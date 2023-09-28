@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MixedRealityModelingTools",
     "author": "Your Name",
-    "version": (0, 0,9,2),
+    "version": (0, 0,9,8),
     "blender": (3, 4, 0),
     "location": "View3D > UI > My Panel",
     "description": "MixedRealityModelingTools",
@@ -10,7 +10,7 @@ bl_info = {
     "category": "3D View",
 }
 
-#version 0.0.92
+#version 0.0.98
 import bpy
 import socket
 import threading
@@ -119,8 +119,8 @@ class ServerThread(threading.Thread):
 
 
 # Run the server in a new thread
-#server_thread = ServerThread("0.0.0.0", 9998)
-#server_thread.start()
+server_thread = ServerThread("0.0.0.0", 9998)
+server_thread.start()
 
 
 def send_message_to_unity(message):
@@ -190,7 +190,6 @@ class SimpleOperator(bpy.types.Operator):
     bl_label = "Send Mesh"
 
     def execute(self, context):
-       # send_message_to_unity("Hello from Blender!")
         mesh_data = get_mesh_data()
         send_mesh_data_to_unity(mesh_data)
         return {'FINISHED'}
@@ -417,6 +416,16 @@ def process_received_data(request):
             position = data[1]
             rotation = data[2]
             update_camera_position(position,rotation)
+        elif header == 'REQM':
+            obj = bpy.context.view_layer.objects.active
+
+            if obj and obj.type == 'MESH':
+               bpy.context.view_layer.objects.active = obj  # メッシュオブジェクトをアクティブに設定
+               bpy.ops.mesh.customdata_custom_splitnormals_clear()  # メッシュデータをクリア
+               mesh_data = get_mesh_data()  # 新しいメッシュデータを取得
+               send_mesh_data_to_unity(mesh_data)  # データをUnityに送信
+            else:
+               print("Active object is not a mesh.")
         else:
             print("Unknown header:", header)
 

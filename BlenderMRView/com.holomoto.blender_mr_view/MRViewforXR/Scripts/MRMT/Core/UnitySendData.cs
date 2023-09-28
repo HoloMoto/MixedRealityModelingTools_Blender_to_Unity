@@ -6,6 +6,7 @@ using MessagePack;
 using MessagePack.Resolvers;
 using MessagePack.Formatters;
 using MessagePack.Unity;
+using Unity.Collections;
 
 
 namespace MixedRealityModelingTools.Core
@@ -69,11 +70,84 @@ namespace MixedRealityModelingTools.Core
             
             return serializedData;
         }
+        public byte[] SendUnityRequestData(){
 
+        UnityRequestData unityreqData = new UnityRequestData{
+            header = "REQM"
+        };
+        var options = MessagePackSerializerOptions.Standard.WithResolver(CompositeResolver.Create(
+
+            new IMessagePackFormatter[]{new UnityRequestDataFormatter()},
+            new IFormatterResolver[]{
+                CustomUnityRequestDataResolver.Instance
+            }
+        ));
+            byte[] serializedData = MessagePackSerializer.Serialize(unityreqData,options);
+            return serializedData;
+        }
     }
     
+    [DataContract]
+    public  class UnityRequestData{
+        [DataMember] public string header;
+    }
+    public class CustomUnityRequestDataResolver: IFormatterResolver{
+        public static readonly IFormatterResolver Instance = CompositeResolver.Create(
+            new IMessagePackFormatter[]{new UnityRequestDataFormatter()},
+            new IFormatterResolver[]{
+                StandardResolver.Instance,
+                UnityResolver.Instance
+            }
+        );
+            public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            return Instance.GetFormatter<T>();
+        }
+    }
+
+    public class UnityRequestDataFormatter:IMessagePackFormatter<UnityRequestData>
+    {
+        public void Serialize(ref MessagePackWriter writer, UnityRequestData value, MessagePackSerializerOptions options)
+        {
+            writer.WriteArrayHeader(1);
+            options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
+            
+        }
+        public UnityRequestData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+         if (reader.TryReadNil())
+            {
+                return null;
+            }
     
+            options.Security.DepthStep(ref reader);
     
+            int length = reader.ReadMapHeader();
+            if (length != 1)
+            {
+                throw new MessagePackSerializationException("Invalid map length.");
+            }
+    
+            string header = null;
+            for (int i = 0; i < length; i++)
+            {
+                string key = reader.ReadString();
+                switch (key)
+                {
+                    case "header":
+                        header = options.Resolver.GetFormatterWithVerify<string>().Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
+                }
+            }
+    
+            reader.Depth--;
+            
+            return new UnityRequestData() { header = header };
+        }
+    }
     [DataContract]
     public class UnityCameraData
     {
@@ -157,4 +231,5 @@ namespace MixedRealityModelingTools.Core
         }
         
     }
+    
 }
