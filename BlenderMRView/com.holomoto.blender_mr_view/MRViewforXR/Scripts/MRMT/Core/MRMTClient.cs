@@ -13,7 +13,7 @@ using MessagePack.Formatters;
 namespace MixedRealityModelingTools.Core
 {
     [RequireComponent(typeof(ObjectBuilder))]
-    public class TCPClient : MonoBehaviour
+    public class MRMTClient : MonoBehaviour
     {
         [CanBeNull] private TcpClient _client;
         private NetworkStream _stream;
@@ -23,7 +23,7 @@ namespace MixedRealityModelingTools.Core
         /// </summary>
         ObjectBuilder _objectBuilder;
 
-        [Tooltip("port number")] public int _port = 9998;
+        [Tooltip("Port number")] public int _port = 9998;//Default is 9998
         [Tooltip("Address of the server")] public string _ipAddress = "localhost";
 
         string connectionStatusText;

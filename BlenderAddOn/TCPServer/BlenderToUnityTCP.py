@@ -253,7 +253,7 @@ def get_mesh_data():
     depsgraph = bpy.context.evaluated_depsgraph_get()
     obj_eval = obj.evaluated_get(depsgraph)
     temp_mesh = bpy.data.meshes.new_from_object(obj_eval)
-    bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    #bpy.ops.mesh.customdata_custom_splitnormals_clear()
     
     # Get vertices and triangles
     vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices] 
@@ -416,14 +416,12 @@ def process_received_data(request):
             position = data[1]
             rotation = data[2]
             update_camera_position(position,rotation)
-        elif header == 'REQM':
+        elif header == 'REQM':# RequestMextdeta
             obj = bpy.context.view_layer.objects.active
 
             if obj and obj.type == 'MESH':
-               bpy.context.view_layer.objects.active = obj  # メッシュオブジェクトをアクティブに設定
-               bpy.ops.mesh.customdata_custom_splitnormals_clear()  # メッシュデータをクリア
                mesh_data = get_mesh_data()  # 新しいメッシュデータを取得
-               send_mesh_data_to_unity(mesh_data)  # データをUnityに送信
+               send_mesh_data_to_unity(mesh_data)  
             else:
                print("Active object is not a mesh.")
         else:

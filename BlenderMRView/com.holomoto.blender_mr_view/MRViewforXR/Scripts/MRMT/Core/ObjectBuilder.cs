@@ -269,18 +269,18 @@ namespace MixedRealityModelingTools.Core
 
         public void CreateTexture()
         {
-            Texture2D texture = new Texture2D(1, 1); // 仮のサイズを指定
+            Texture2D texture = new Texture2D(1, 1); //Set Texture temp size
             byte[] decodedBinaryData = _ImageData.ImageBytes;
-            texture.LoadImage(decodedBinaryData); // バイト配列をTexture2Dに読み込む 
+            texture.LoadImage(decodedBinaryData); //Load bytes as Texture2D
             texture.name = _ImageData.imagename;
  
 
-            // テクスチャをミップマップを含まないように設定（オプション）
+            // Settings Texture minimap not include(Option)
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
 
-            _debugMaterial.mainTexture = texture;
-            _blenderTexture.Add(texture);
+            _debugMaterial.mainTexture = texture; //debug
+            _blenderTexture.Add(texture);// add TexuterList
 
             if (_blenderMat.Count > 0)
             {
@@ -289,11 +289,16 @@ namespace MixedRealityModelingTools.Core
             }
         }
 
+        void Reset()
+        {
+     
+        }
+
         
     }
 
     /// <summary>
-    /// Check URP or Built-in
+    /// Check URP or Built-in 
     public class EnvironmentDetector
     {
         public static bool IsURP()

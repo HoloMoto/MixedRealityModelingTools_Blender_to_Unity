@@ -12,7 +12,7 @@ namespace MixedRealityModelingTools.Utilites
     public class ConnectionStarter : MonoBehaviour
     {
         [SerializeField]
-        TCPClient _tcpClient;
+        MRMTClient _tcpClient;
         
         public float _connectionTimeout = 5.0f;
 
@@ -29,10 +29,10 @@ namespace MixedRealityModelingTools.Utilites
 
         public void StartConnection()
         {
-            if (_tcpClient._connectionState == TCPClient.ConnectionState.Disconnected)
+            if (_tcpClient._connectionState == MRMTClient.ConnectionState.Disconnected)
             {
                 StartCoroutine(ConnectionTimeout()); 
-                _tcpClient._connectionState = TCPClient.ConnectionState.Connecting;
+                _tcpClient._connectionState = MRMTClient.ConnectionState.Connecting;
                 
                 //start connection TCPClient
                 _tcpClient.StartConnection();
@@ -43,9 +43,9 @@ namespace MixedRealityModelingTools.Utilites
         {
             Debug.Log("Connecting...");
             yield return new WaitForSeconds(_connectionTimeout);
-            if (_tcpClient._connectionState != TCPClient.ConnectionState.Connected)
+            if (_tcpClient._connectionState != MRMTClient.ConnectionState.Connected)
             {
-                _tcpClient._connectionState = TCPClient.ConnectionState.Disconnected;
+                _tcpClient._connectionState = MRMTClient.ConnectionState.Disconnected;
                 Debug.Log("Connection Timeout");
             }
             else
