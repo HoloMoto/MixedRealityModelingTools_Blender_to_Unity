@@ -27,3 +27,10 @@ On the Unity side, you can install it as a UPM (Unity Package Manager).
 This project is being developed as an open-source project. We appreciate everyone's opinions and contributions.
 
 Also, please remember that it's still a work in progress at this point.
+
+
+## Sample Apps
+
+### HoloLens 2 And MetaQuest 3 Sample App
+
+https://github.com/HoloMoto/MixedRealityModelintTools_UnitySamples/releases/tag/v1SampleApp
