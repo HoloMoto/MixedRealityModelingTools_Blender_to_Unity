@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MixedRealityModelingTools",
     "author": "HoloMoto",
-    "version": (0, 0,9,8),
+    "version": (0, 0,9,85),
     "blender": (3, 4, 0),
     "location": "View3D > UI > My Panel",
     "description": "MixedRealityModelingTools",
