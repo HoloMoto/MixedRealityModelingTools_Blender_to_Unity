@@ -34,3 +34,8 @@ Also, please remember that it's still a work in progress at this point.
 ### HoloLens 2 And MetaQuest 3 Sample App
 
 https://github.com/HoloMoto/MixedRealityModelintTools_UnitySamples/releases/tag/v1SampleApp
+
+
+## Document
+
+https://www.notion.so/MixedRealityModelingTools-fe9bbccb215d4f6fbc0eeaa14500b8b4?pvs=4
