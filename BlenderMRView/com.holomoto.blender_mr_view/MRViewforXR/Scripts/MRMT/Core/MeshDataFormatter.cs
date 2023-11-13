@@ -103,13 +103,18 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
 {
     public void Serialize(ref MessagePackWriter writer, MaterialData value, MessagePackSerializerOptions options)
     {
-        writer.WriteMapHeader(3);
+        writer.WriteMapHeader(5);
         options.Resolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.header, options);
+
         writer.Write("header");
         writer.Write("materialname");
         options.Resolver.GetFormatterWithVerify<List<string>>().Serialize(ref writer, value.materialname, options);
         writer.Write("rgba");
         options.Resolver.GetFormatterWithVerify<List<float>>().Serialize(ref writer, value.rgba, options);
+        writer.Write("metal");
+        options.Resolver.GetFormatterWithVerify<float>().Serialize(ref writer, value.metallic ,options);
+        writer.Write("smooth");
+        options.Resolver.GetFormatterWithVerify<float>().Serialize(ref writer, value.smoothness ,options);
     }
 
     public MaterialData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -122,7 +127,7 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
         options.Security.DepthStep(ref reader);
 
         int length = reader.ReadMapHeader();
-        if (length != 3)
+        if (length != 5)
         {
             throw new MessagePackSerializationException("Invalid map length.");
         }
@@ -130,6 +135,8 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
         string header = null;
         List<string> materialname = null;
         List<float> rgba = null;
+        float metal = 0;
+        float smooth = 0;
 
 
         for (int i = 0; i < length; i++)
@@ -146,6 +153,12 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
                 case "rgba":
                     rgba = options.Resolver.GetFormatterWithVerify<List<float>>().Deserialize(ref reader, options);
                     break;
+                case "metal":
+                    metal = options.Resolver.GetFormatterWithVerify<float>().Deserialize(ref reader,options);
+                    break;
+                case "smooth":
+                    smooth = options.Resolver.GetFormatterWithVerify<float>().Deserialize(ref reader,options);
+                    break;
                 default:
                     reader.Skip();
                     break;
@@ -154,7 +167,7 @@ public class MaterialDataFormatter : IMessagePackFormatter<MaterialData>
 
         reader.Depth--;
 
-        return new MaterialData { header = header ,materialname = materialname, rgba = rgba };
+        return new MaterialData { header = header ,materialname = materialname, rgba = rgba, metallic = metal};
     }
     
     
