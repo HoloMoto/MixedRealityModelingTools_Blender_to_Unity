@@ -1,6 +1,6 @@
 bl_info = {
     "name": "MixedRealityModelingTools",
-    "author": "Your Name",
+    "author": "HoloMoto",
     "version": (0, 0,9,8),
     "blender": (3, 4, 0),
     "location": "View3D > UI > My Panel",
@@ -147,7 +147,7 @@ def send_mesh_data_to_unity(mesh_data):
         uv_y = uvs_list[i + 1]
         print(f"UV[{i//2}]: ({uv_x}, {uv_y})")
     
-    MESH_HEADER = "MESH"  # メッシュデータのヘッダー
+    MESH_HEADER = "MESH"  # header of Mesh Data
     # Build data as Dictionary
     data_dict = {
         'header': MESH_HEADER,
@@ -326,14 +326,17 @@ def send_material_data_to_unity(mat_data,send_base_color_texture):
 
     for selected_material_name in mat_data:
         selected_material = bpy.data.materials.get(selected_material_name)
-        MAT_HEADER = "MATE"
+        MAT_HEADER = "MATE" #Header of Material Data
         if selected_material:
             base_color_node = selected_material.node_tree.nodes.get("Principled BSDF")
             if base_color_node:
                 base_color = base_color_node.inputs["Base Color"].default_value
                 print(f"Material: {selected_material_name}")
                 print(f"Base Color (RGBA): ({base_color[0]}, {base_color[1]}, {base_color[2]}, {base_color[3]})")
-
+                base_metallic = base_color_node.inputs["Metallic"].default_value
+                print(f"Metallic:{base_metallic}")
+                material_smoothness = base_color_node.inputs['Roughness'].default_value
+                print(f"Smooth:{material_smoothness}")
                 if send_base_color_texture:
                     get_texture(selected_material)
 
@@ -343,7 +346,9 @@ def send_material_data_to_unity(mat_data,send_base_color_texture):
                 mat_data_dict = {
                     'header': MAT_HEADER,
                     'materialname': [selected_material_name],
-                    'rgba': rgba_list
+                    'rgba': rgba_list,
+                    'metal': base_metallic,
+                    'smooth': material_smoothness
                 }
 
                 serialized_mat_data = msgpack.packb(mat_data_dict)

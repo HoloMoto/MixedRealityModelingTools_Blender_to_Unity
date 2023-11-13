@@ -74,9 +74,12 @@ namespace MixedRealityModelingTools.Core
         
         [DataMember]
         public List<float> rgba;
+
+        [DataMember]
+        public float metallic;
     
-     //   [DataMember]
-       // public List<float> smoothness;
+        [DataMember]
+        public float smoothness;
     
       //  [DataMember]
       //  public List<float> emission;

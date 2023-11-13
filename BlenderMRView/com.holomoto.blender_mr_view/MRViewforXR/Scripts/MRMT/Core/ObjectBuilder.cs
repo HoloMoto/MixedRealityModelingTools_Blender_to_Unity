@@ -37,6 +37,9 @@ namespace MixedRealityModelingTools.Core
         [CanBeNull]public List<Texture2D> _blenderTexture = new List<Texture2D>();
 
         [SerializeField] private Material _debugMaterial;
+
+        [SerializeField] string _metallicPramsName = "_Metallic";
+        [SerializeField] string _smoothnessParamName = "_Smoothness";
         private void Update()
         {
             if (_isGetMeshData)
@@ -255,6 +258,8 @@ namespace MixedRealityModelingTools.Core
 
                     mat.name = materialData.materialname[0];
                     mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                    mat.SetFloat(_metallicPramsName,materialData.metallic);
+                    mat.SetFloat(_smoothnessParamName,materialData.smoothness);
                     _blenderMat.Add(mat);
                 }
                 else
@@ -262,6 +267,8 @@ namespace MixedRealityModelingTools.Core
                     //UpdateMaterial
                     Material mat = _blenderMat.Find(x => x.name == materialData.materialname[0]);
                     mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                    mat.SetFloat(_metallicPramsName,materialData.metallic);
+                    mat.SetFloat(_smoothnessParamName,materialData.smoothness);
                     
                 }
             

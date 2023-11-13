@@ -5,9 +5,7 @@ using System.Threading;
 using JetBrains.Annotations;
 using UnityEngine;
 using MessagePack;
-using UnityEditor.PackageManager.Requests;
-using MessagePack.Resolvers;
-using MessagePack.Formatters;
+
 
 
 namespace MixedRealityModelingTools.Core
