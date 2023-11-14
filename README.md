@@ -20,6 +20,12 @@ With the object you want to send selected in Blender, you should see the MixedRe
 
 On the Unity side, you can install it as a UPM (Unity Package Manager).
 
+# Requirement
+
+・Blender 3.4
+  ・MessagePack
+
+
 
 ## Other
 
