@@ -17,6 +17,9 @@ namespace MixedRealityModelingTools.Core
         
         [DataMember]
         public string objectname;
+
+        [DataMember]
+        public List<int> material_index;
         
         [DataMember]
         public List<float> vertices;

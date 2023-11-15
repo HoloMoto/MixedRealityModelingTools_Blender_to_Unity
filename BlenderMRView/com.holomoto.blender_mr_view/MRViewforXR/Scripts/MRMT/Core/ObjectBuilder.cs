@@ -71,10 +71,11 @@ namespace MixedRealityModelingTools.Core
                 mesh.SetTriangles(meshData.triangles, 0);
                 if (meshData.uvs != null && meshData.uvs.Count > 0)
                 {
-                     List<int> triangles_output = new List<int>();
+                    List<int> triangles_output = new List<int>();
                     List<Vector3> vertices_output = new List<Vector3>();
                    List<Vector2> _list_uv =  ConvertToVector2List(meshData.uvs);
                    List<Vector2> uvs = new List<Vector2>();
+
 
                    for(int i =0 ; i< meshData.triangles.Count;i +=3 ){
   
@@ -84,11 +85,10 @@ namespace MixedRealityModelingTools.Core
                 
                    Vector3 normal = Vector3.Cross(v1 - v0, v2 - v0).normalized;
 
-                   Debug.Log(i);
                    Vector2 uv0 = new Vector2(meshData.uvs[i*2], meshData.uvs[i*2+1]);
                    Vector2 uv1 = new Vector2(meshData.uvs[i*2+2], meshData.uvs[i*2+3]);
                    Vector2 uv2 = new Vector2(meshData.uvs[i*2+4], meshData.uvs[i*2+5]);
-                   Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
+                   //Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
                    uvs.Add(uv0);
                    uvs.Add(uv1);
                    uvs.Add(uv2);
