@@ -2,9 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Codice.Client.BaseCommands;
 using JetBrains.Annotations;
+using UnityEditor.ProjectWindowCallback;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SubsystemsImplementation.Extensions;
 
 namespace MixedRealityModelingTools.Core
 {
@@ -23,18 +27,20 @@ namespace MixedRealityModelingTools.Core
         [CanBeNull] public Material _defaultMaterial;
         public MeshData meshData;
         private Mesh mesh;
+        private List<Mesh> subMesh;
+        private CombineInstance[] submeshInstance;
         [SerializeField] private bool _isFlatShading = true;
         [HideInInspector] public bool _isGetMeshData = false;
 
-        [HideInInspector]public bool _isGetMaterialData = false;
-        
+        [HideInInspector] public bool _isGetMaterialData = false;
+
         public MaterialData _materialData;
         [CanBeNull] public List<Material> _blenderMat = new List<Material>();
 
 
         public ImageData _ImageData;
         [HideInInspector] public bool _isGetImageData = false;
-        [CanBeNull]public List<Texture2D> _blenderTexture = new List<Texture2D>();
+        [CanBeNull] public List<Texture2D> _blenderTexture = new List<Texture2D>();
 
         [SerializeField] private Material _debugMaterial;
 
@@ -44,6 +50,7 @@ namespace MixedRealityModelingTools.Core
         {
             if (_isGetMeshData)
             {
+                _isGetMeshData = false;
                 if (!_targetObjectNames.Contains(meshData.objectname))
                 {
                     _createdObject = Instantiate(_targetObjectPrefab, transform);
@@ -65,79 +72,104 @@ namespace MixedRealityModelingTools.Core
                 _meshRenderer = _createdObject.GetComponent<MeshRenderer>();
 
                 mesh = new Mesh();
-
-                List<Vector3> vertices = ConvertToVector3List(meshData.vertices);
-                mesh.SetVertices(vertices);
-                mesh.SetTriangles(meshData.triangles, 0);
-                if (meshData.uvs != null && meshData.uvs.Count > 0)
+                subMesh = new List<Mesh>();
+                List<List<Vector3>> vertices = new List<List<Vector3>>();
+                List<List<int>> triangles = new List<List<int>>();
+                List<List<Vector3>> normals = new List<List<Vector3>>();
+                List<List<Vector2>> uvs = new List<List<Vector2>>();
+                submeshInstance = new CombineInstance[meshData.material_index.Count / 5];//マテリアル数サブメッシュは作られる
+                ConvertToMeshIndex(meshData, out vertices, out triangles, out normals, out uvs);
+                for (int l = 0; l < meshData.material_index.Count / 5; l++)
                 {
-                    List<int> triangles_output = new List<int>();
-                    List<Vector3> vertices_output = new List<Vector3>();
-                   List<Vector2> _list_uv =  ConvertToVector2List(meshData.uvs);
-                   List<Vector2> uvs = new List<Vector2>();
-
-
-                   for(int i =0 ; i< meshData.triangles.Count;i +=3 ){
-  
-                   Vector3 v0 = vertices[meshData.triangles[i]];
-                   Vector3 v1 = vertices[meshData.triangles[i + 1]];
-                   Vector3 v2 = vertices[meshData.triangles[i + 2]];
-                
-                   Vector3 normal = Vector3.Cross(v1 - v0, v2 - v0).normalized;
-
-                   Vector2 uv0 = new Vector2(meshData.uvs[i*2], meshData.uvs[i*2+1]);
-                   Vector2 uv1 = new Vector2(meshData.uvs[i*2+2], meshData.uvs[i*2+3]);
-                   Vector2 uv2 = new Vector2(meshData.uvs[i*2+4], meshData.uvs[i*2+5]);
-                   //Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
-                   uvs.Add(uv0);
-                   uvs.Add(uv1);
-                   uvs.Add(uv2);
-                
-                   vertices_output.Add(v0);
-                   vertices_output.Add(v1);
-                   vertices_output.Add(v2);
-
-                   triangles_output.Add(i);
-                   triangles_output.Add(i + 1);
-                   triangles_output.Add(i + 2);
-                   }
-                   mesh.vertices = vertices_output.ToArray();
-                   mesh.triangles = triangles_output.ToArray();
-                   mesh.uv = uvs.ToArray();
-                }
-
-                _meshFilter.mesh = mesh;
-                _isGetMeshData = false;
-                if (_isFlatShading)
-                    FlatShading();
-                else
-                {
-                    Vector3[] vertexNormals = CalculateVertexNormals(vertices, meshData.triangles);
-                    mesh.SetNormals(vertexNormals);
-                }
-
-                if (_defaultMaterial != null)
-                    _meshRenderer.material = _defaultMaterial;
-
-
-                if (_meshRenderer.material.name == _defaultMaterial.name+" (Instance)"   && _blenderMat.Count != 0)
-                {
-
-                    Debug.Log(_meshRenderer.materials.Length);
-                    for (int i = 0; i < _meshRenderer.materials.Length; i++)
+                    Debug.Log(vertices[l].Count);
+                    // デバッグメッセージを出力して、頂点とトライアングルの情報を確認
+                    for (int i = 0; i < triangles[l].Count; i += 3)
                     {
-                        _meshRenderer.materials[i] = _blenderMat[i];
-                        Debug.Log(_meshRenderer.materials[i]);
+                        Debug.Log($"Triangle {i / 3}: {triangles[l][i]}, {triangles[l][i + 1]}, {triangles[l][i + 2]}");
                     }
-                    //_MeshRendererを更新
-                    _meshRenderer.materials = _blenderMat.ToArray();
+                    mesh.SetVertices(vertices[l]);
+                    mesh.SetTriangles(triangles[l], 0);
+                    _meshFilter.mesh = mesh;
+
+                    Debug.Log("Create");
+                    /*
+                    if (uvs != null && uvs.Count > 0)
+                    {
+                        List<int> triangles_output = new List<int>();
+                        List<Vector3> vertices_output = new List<Vector3>();
+                        List<Vector2> _list_uv = uvs[0];
+                        List<Vector2> uv = new List<Vector2>();
+
+
+                        for (int i = 0; i < triangles.Count; i += 3)
+                        {
+                            Debug.Log("tempStart");
+
+                            Vector3 v0 = vertices[l][triangles[l][i]];
+                            Vector3 v1 = vertices[l][triangles[l][i + 1]];
+                            Vector3 v2 = vertices[l][triangles[l][i + 2]];
+
+                            Vector3 normal = Vector3.Cross(v1 - v0, v2 - v0).normalized;
+                            Debug.Log(uvs[0][i]);
+                            Vector2 uv0 = new Vector2(uvs[l][i][i * 2], uvs[l][i][i * 2 + 1]);//meshData.uvs[i * 2 + 1]);
+                            Vector2 uv1 = new Vector2(uvs[l][i][i * 2 + 2], uvs[l][i][i * 2 + 3]);
+                            Vector2 uv2 = new Vector2(uvs[l][i][i * 2 + 4], uvs[l][i][i * 2 + 5]);
+                                                        Debug.Log("tempend");
+                            //Debug.Log("uv0;"+uv0+",uv1;"+uv1+",uv2;"+uv2);
+                            uv.Add(uv0);
+                            uv.Add(uv1);
+                            uv.Add(uv2);
+
+                            vertices_output.Add(v0);
+                            vertices_output.Add(v1);
+                            vertices_output.Add(v2);
+
+                            triangles_output.Add(i);
+                            triangles_output.Add(i + 1);
+                            triangles_output.Add(i + 2);
+
+                        }
+                        mesh.vertices = vertices_output.ToArray();
+                        mesh.triangles = triangles_output.ToArray();
+                        mesh.uv = uv.ToArray();
+                    }*/
+                    if (_isFlatShading)
+                        FlatShading();
+                    else
+                    {
+                        Vector3[] vertexNormals = CalculateVertexNormals(vertices[0], triangles[0]);
+                        mesh.SetNormals(vertexNormals);
+                    }
+
+
+                    if (_defaultMaterial != null)
+                        _meshRenderer.material = _defaultMaterial;
+
+
+                    if (_meshRenderer.material.name == _defaultMaterial.name + " (Instance)" && _blenderMat.Count != 0)
+                    {
+
+                        Debug.Log(_meshRenderer.materials.Length);
+                        for (int i = 0; i < _meshRenderer.materials.Length; i++)
+                        {
+                            _meshRenderer.materials[i] = _blenderMat[i];
+                            Debug.Log(_meshRenderer.materials[i]);
+                        }
+                        //_MeshRendererを更新
+                        _meshRenderer.materials = _blenderMat.ToArray();
+                    }
+                    submeshInstance[l].mesh = mesh;
+                    submeshInstance[l].subMeshIndex = l;
+                    mesh = new Mesh(); //Initialize
+                    Debug.Log(mesh);
                 }
+                mesh.CombineMeshes(submeshInstance, false, false);
             }
 
             if (_isGetMaterialData)
             {
                 CreateMaterial(_materialData);
-                
+
                 _isGetMaterialData = false;
             }
 
@@ -147,6 +179,8 @@ namespace MixedRealityModelingTools.Core
                 _isGetImageData = false;
             }
         }
+
+
 
         private List<Vector3> ConvertToVector3List(List<float> floats)
         {
@@ -165,19 +199,19 @@ namespace MixedRealityModelingTools.Core
         }
         private List<Vector2> ConvertToVector2List(List<float> floats)
         {
-          if (floats.Count % 2 != 0)
-          {
-                 throw new ArgumentException("The float list cannot be divided into groups of two for UV coordinates.");
-          }
+            if (floats.Count % 2 != 0)
+            {
+                throw new ArgumentException("The float list cannot be divided into groups of two for UV coordinates.");
+            }
 
-    List<Vector2> result = new List<Vector2>(floats.Count / 2);
-    for (int i = 0; i < floats.Count; i += 2)
-    {
-        result.Add(new Vector2(floats[i], floats[i + 1]));
-    }
+            List<Vector2> result = new List<Vector2>(floats.Count / 2);
+            for (int i = 0; i < floats.Count; i += 2)
+            {
+                result.Add(new Vector2(floats[i], floats[i + 1]));
+            }
 
-    return result;
-}
+            return result;
+        }
 
         /// <summary>
         /// Smooth Shading 
@@ -243,35 +277,35 @@ namespace MixedRealityModelingTools.Core
 
         public void CreateMaterial(MaterialData materialData)
         {
-                Debug.Log(materialData.materialname[0]);
-                if (!_blenderMat.Exists(x => x.name == materialData.materialname[0]))
+            Debug.Log(materialData.materialname[0]);
+            if (!_blenderMat.Exists(x => x.name == materialData.materialname[0]))
+            {
+                Material mat;
+                if (_defaultMaterial != null)
                 {
-                    Material mat;
-                    if (_defaultMaterial != null)
-                    {
-                        mat = new Material(Shader.Find(_defaultMaterial.shader.name));
-                    }
-                    else
-                    {
-                         mat = new Material(Shader.Find("Standard"));
-                    }
-
-                    mat.name = materialData.materialname[0];
-                    mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
-                    mat.SetFloat(_metallicPramsName,materialData.metallic);
-                    mat.SetFloat(_smoothnessParamName,materialData.smoothness);
-                    _blenderMat.Add(mat);
+                    mat = new Material(Shader.Find(_defaultMaterial.shader.name));
                 }
                 else
                 {
-                    //UpdateMaterial
-                    Material mat = _blenderMat.Find(x => x.name == materialData.materialname[0]);
-                    mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
-                    mat.SetFloat(_metallicPramsName,materialData.metallic);
-                    mat.SetFloat(_smoothnessParamName,materialData.smoothness);
-                    
+                    mat = new Material(Shader.Find("Standard"));
                 }
-            
+
+                mat.name = materialData.materialname[0];
+                mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                mat.SetFloat(_metallicPramsName, materialData.metallic);
+                mat.SetFloat(_smoothnessParamName, materialData.smoothness);
+                _blenderMat.Add(mat);
+            }
+            else
+            {
+                //UpdateMaterial
+                Material mat = _blenderMat.Find(x => x.name == materialData.materialname[0]);
+                mat.color = new Color(materialData.rgba[0], materialData.rgba[1], materialData.rgba[2]);
+                mat.SetFloat(_metallicPramsName, materialData.metallic);
+                mat.SetFloat(_smoothnessParamName, materialData.smoothness);
+
+            }
+
         }
 
         public void CreateTexture()
@@ -280,10 +314,10 @@ namespace MixedRealityModelingTools.Core
             byte[] decodedBinaryData = _ImageData.ImageBytes;
             texture.LoadImage(decodedBinaryData); //Load bytes as Texture2D
             texture.name = _ImageData.imagename;
- 
+
 
             // Settings Texture minimap not include(Option)
-            texture.filterMode = FilterMode.Bilinear;
+            // texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
 
             _debugMaterial.mainTexture = texture; //debug
@@ -296,12 +330,49 @@ namespace MixedRealityModelingTools.Core
             }
         }
 
+        //MeshData内の各データをマテリアルナンバーごとに抽出
+        void ConvertToMeshIndex(MeshData meshData, out List<List<Vector3>> vertices, out List<List<int>> triangles, out List<List<Vector3>> normals, out List<List<Vector2>> uvs)
+        {
+            vertices = new List<List<Vector3>>();
+            triangles = new List<List<int>>();
+            normals = new List<List<Vector3>>();
+            uvs = new List<List<Vector2>>();
+
+            //SubMeshごとの頂点数
+            List<int> vertexIndex = new List<int>();//material size
+            List<int> trianglesIndex = new List<int>();
+            List<int> normalIndex = new List<int>();
+            List<int> UvIndex = new List<int>();
+
+            for (int i = 0; i < meshData.material_index.Count; i += 5)
+            {
+               // Debug.Log(meshData.material_index[i + 1]);//subMeshを構成する頂点数
+                vertexIndex.Add(meshData.material_index[i]);
+                trianglesIndex.Add(meshData.material_index[i + 1]);
+                normalIndex.Add(meshData.material_index[i + 3]);
+                UvIndex.Add(meshData.material_index[i + 4]);
+            }
+
+            int vertexsize = 0;
+            for (int j = 0; j < vertexIndex.Count; j++)//マテリアル数実行
+            {
+                Debug.Log(meshData.vertices.Count);
+                Debug.Log(trianglesIndex[j]);
+                vertices.Add(ConvertToVector3List(meshData.vertices.GetRange(vertexsize, trianglesIndex[j] * 3)));
+                meshData.vertices.RemoveRange(0, trianglesIndex[j]*3);
+                triangles.Add(meshData.triangles.GetRange(vertexsize / 3, trianglesIndex[j]));//triangles[0]=最初のサブメッシュ
+                normals.Add(ConvertToVector3List(meshData.normals.GetRange(vertexsize, trianglesIndex[j] * 3)));
+                uvs.Add(ConvertToVector2List(meshData.uvs.GetRange(vertexsize / 2, trianglesIndex[j] * 2)));
+                vertexsize += trianglesIndex[j] * 3;//各データは頂点数かける
+            }
+           
+        }
         void Reset()
         {
-     
+
         }
 
-        
+
     }
 
     /// <summary>
@@ -318,5 +389,5 @@ namespace MixedRealityModelingTools.Core
             return GraphicsSettings.renderPipelineAsset == null;
         }
     }
-    
+
 }

@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MixedRealityModelingTools",
     "author": "HoloMoto",
-    "version": (0, 0,9,85),
+    "version": (0, 0,9,8),
     "blender": (3, 4, 0),
     "location": "View3D > UI > My Panel",
     "description": "MixedRealityModelingTools",
@@ -132,48 +132,48 @@ def send_message_to_unity(message):
             
 
 def send_mesh_data_to_unity(mesh_data):
-    vertices, triangles, normals, uvs  = mesh_data 
-   
-    # Convert numpy arrays to list
-    vertices_list = np.array(vertices, dtype='<f4').flatten().tolist()
-    triangles_list = np.array(triangles, dtype='<i4').flatten().tolist()
-    normals_list = np.array(normals, dtype='<f4').flatten().tolist()
-    uvs_list = np.array(uvs, dtype='<f4').flatten().tolist()
+    # Extract mesh data
+    all_vertices, all_triangles, all_normals, all_uvs = mesh_data 
 
-        # Debug: Print UV values
-    print("UV Values:")
-    for i in range(0, len(uvs_list), 2):
-        uv_x = uvs_list[i]
-        uv_y = uvs_list[i + 1]
-        print(f"UV[{i//2}]: ({uv_x}, {uv_y})")
-    
-    MESH_HEADER = "MESH"  # header of Mesh Data
+    # Common data for all materials
+    header = "MESH"
+    objectname = bpy.context.view_layer.objects.active.name
+
+    # Lists to store serialized mesh data for all materials
+    mesh_index = []
+    vertices_list = []
+    triangles_list = []
+    normals_list = []
+    uvs_list = []
+
+    # Loop through each material
+    for material_index, (vertices, triangles, normals, uvs) in enumerate(zip(all_vertices, all_triangles, all_normals, all_uvs)):
+        # Convert numpy arrays to list
+        vertices_list.extend(np.array(vertices, dtype='<f4').flatten().tolist())
+        triangles_list.extend(np.array(triangles, dtype='<i4').flatten().tolist())
+        normals_list.extend(np.array(normals, dtype='<f4').flatten().tolist())
+        uvs_list.extend(np.array(uvs, dtype='<f4').flatten().tolist())
+        
+        print(len(vertices))
+        
+
+        mesh_index.extend([len(vertices_list), len(triangles),len(triangles),len(normals),len(uvs)])
+
     # Build data as Dictionary
     data_dict = {
-        'header': MESH_HEADER,
-        'objectname' : bpy.context.view_layer.objects.active.name,
+        'header': header,
+        'objectname': objectname,
+        'mesh_index':mesh_index, 
         'vertices': vertices_list,
         'triangles': triangles_list,
         'normals': normals_list,
         'uvs': uvs_list
     }
 
-    # serialize MessagePack
+    # Serialize MessagePack
     serialized_mesh_data = msgpack.packb(data_dict)
 
-    #print(f"Serialized data (bytes): {serialized_mesh_data.hex()}")
-    #Verification
-    #verification_mesh_data(serialized_mesh_data)
-      
-    # Check Deserialization
-    try:
-        deserialized_data = msgpack.unpackb(serialized_mesh_data)
-        print("Deserialization success!")
-        #print(deserialized_data)  
-    except Exception as e:
-        print(f"Deserialization error: {e}")
-        return  
-
+    # Loop through the clients and send serialized mesh data
     for client in server_thread.clients:
         try:
             client.sendall(serialized_mesh_data)
@@ -239,9 +239,12 @@ bpy.types.Scene.send_base_color_texture = bpy.props.BoolProperty(name="Send Base
 
 
 def get_mesh_data():
+    #Get activeObject
     obj = bpy.context.view_layer.objects.active
     print(f"Active object name: {obj.name}")
 
+    
+    
     # Add Triangulate modifier
     triangulate_mod = obj.modifiers.new(name="Triangulate", type='TRIANGULATE')
     triangulate_mod.keep_custom_normals = True
@@ -255,30 +258,52 @@ def get_mesh_data():
     temp_mesh = bpy.data.meshes.new_from_object(obj_eval)
     #bpy.ops.mesh.customdata_custom_splitnormals_clear()
     
+    material_slots = obj.material_slots
+
     # Get vertices and triangles
-    vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices] 
+    all_vertices = []
+    all_triangles = []
+    all_normals = []
+    all_uvs = []
+    
+    for material_slot in material_slots:  
+        material_index = material_slots.find(material_slot.name) 
+        
+        # Set active material index
+        obj.active_material_index = material_index
 
-    triangles = []
-    for p in temp_mesh.polygons:
-        triangles.extend(p.vertices)
+        # Get vertices, triangles, and uvs for the current material
+        vertices = [[v.co.x, v.co.y, v.co.z] for v in temp_mesh.vertices]
+        triangles = []
+        uvs = []
 
-    uvs = []
-    for p in temp_mesh.polygons:
-            for loop_index in p.loop_indices:
-                uv = temp_mesh.uv_layers.active.data[loop_index].uv
-                uvs.extend([uv.x, uv.y])
+        for p in temp_mesh.polygons:
+            if p.material_index == material_index:
+                triangles.extend(p.vertices)
 
+        for p in temp_mesh.polygons:
+            if p.material_index == material_index:
+                for loop_index in p.loop_indices:
+                    uv = temp_mesh.uv_layers.active.data[loop_index].uv
+                    uvs.extend([uv.x, uv.y])
+
+        normals = [[v.normal.x, v.normal.y, v.normal.z] for v in temp_mesh.vertices]
+
+        # Append data to the lists
+        all_vertices.append(vertices)
+        all_triangles.append(triangles)
+        all_uvs.append(uvs)
+        all_normals.append(normals)
 
     # Remove Triangulate modifier
     obj.modifiers.remove(triangulate_mod)
 
-    # Get normals
-    normals = [[v.normal.x, v.normal.y, v.normal.z] for v in temp_mesh.vertices]
-
     # Don't forget to remove the temporary mesh data
     bpy.data.meshes.remove(temp_mesh)
-    print(f"Mesh data generated: vertices={len(vertices)}, triangles={len(triangles)}, normals={len(normals)}, uvs={len(uvs)}")
-    return (vertices, triangles, normals ,uvs)
+
+    print(f"Mesh data generated for {len(material_slots)} materials") 
+    return all_vertices, all_triangles, all_normals, all_uvs
+
 
 def verification_mesh_data(serialized_mesh_data):
 
@@ -411,6 +436,7 @@ def update_camera_position(new_position,new_rotation):
         print("Camera position updated:", new_position)
     else:
         print("Camera not found in the scene.")
+
 
 def process_received_data(request):
     try:
